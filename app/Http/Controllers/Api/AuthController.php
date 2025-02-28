@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Resources\Responses\ApiResponse;
 use App\Models\User;
+use App\Models\Teacher;
+use App\Models\Student;
 use App\Helpers\NotificationHelpers;
 
 class AuthController extends Controller
@@ -88,6 +90,10 @@ class AuthController extends Controller
             ];
 
             $create = $this->userModel::create($data);
+
+            Teacher::create([
+                'userId' => $create->id
+            ]);
             $this->notif->CreateNotification("registration", "Akun baru atas nama $request->name telah mendaftar ke sistem", $create->id);
 
             DB::commit();

@@ -29,4 +29,16 @@ Route::prefix('/auth')->controller(\App\Http\Controllers\Api\AuthController::cla
 Route::middleware('auth:sanctum')->group(function() {
     Route::get('/profile', [\App\Http\Controllers\Api\AuthController::class, 'get_profile']);
     Route::post('/auth/sign-out', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
+
+    Route::controller(\App\Http\Controllers\Api\DosenController::class)->prefix('dosen')->group(function(){
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::get('/sample/export', 'sample_export');
+        Route::get('/data/export', 'dosen_export');
+        Route::post('/data/import', 'dosen_import');
+        Route::post('/store', 'store');
+        Route::post('/action-selected', 'selected_action');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
 });
