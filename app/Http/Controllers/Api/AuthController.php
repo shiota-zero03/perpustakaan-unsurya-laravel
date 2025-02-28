@@ -91,9 +91,15 @@ class AuthController extends Controller
 
             $create = $this->userModel::create($data);
 
-            Teacher::create([
-                'userId' => $create->id
-            ]);
+            if($request->accountType == 'Teacher') {
+                Teacher::create([
+                    'userId' => $create->id
+                ]);
+            } elseif ($request->accountType == 'Student') {
+                Student::create([
+                    'userId' => $create->id
+                ]);
+            }
             $this->notif->CreateNotification("registration", "Akun baru atas nama $request->name telah mendaftar ke sistem", $create->id);
 
             DB::commit();

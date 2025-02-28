@@ -42,6 +42,18 @@ Route::middleware('auth:sanctum')->group(function() {
         Route::delete('/{id}', 'destroy');
     });
 
+    Route::controller(\App\Http\Controllers\Api\MahasiswaController::class)->prefix('mahasiswa')->group(function(){
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::get('/sample/export', 'sample_export');
+        Route::get('/data/export', 'mahasiswa_export');
+        Route::post('/data/import', 'mahasiswa_import');
+        Route::post('/store', 'store');
+        Route::post('/action-selected', 'selected_action');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
+
     Route::controller(\App\Http\Controllers\Api\FakultasController::class)->prefix('fakultas')->group(function(){
         Route::get('/', 'index');
         Route::get('/{id}', 'show');
