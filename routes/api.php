@@ -41,4 +41,25 @@ Route::middleware('auth:sanctum')->group(function() {
         Route::put('/update/{id}', 'update');
         Route::delete('/{id}', 'destroy');
     });
+
+    Route::controller(\App\Http\Controllers\Api\FakultasController::class)->prefix('fakultas')->group(function(){
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::post('/store', 'store');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
+
+    Route::controller(\App\Http\Controllers\Api\ProdiController::class)->prefix('prodi')->group(function(){
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::post('/store', 'store');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
+
+    Route::controller(\App\Http\Controllers\Api\OptionController::class)->prefix('option')->group(function(){
+        Route::get('/faculty', 'faculty');
+        Route::get('/department', 'prodi');
+    });
 });
