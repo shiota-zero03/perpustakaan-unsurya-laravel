@@ -15,15 +15,15 @@ class SampleExport implements FromCollection, WithHeadings, ShouldAutoSize, With
     public function collection()
     {
         return new Collection([
-            ["No" => 1, "Nama" => "John Doe", "NIDN" => "123481231231", "Jenis Kelamin" => "L", "No. Hp" => "081241231312", "Email" => "youremail@gmail.com"],
-            ["No" => 2, "Nama" => "Jane Doe", "NIDN" => "987654321123", "Jenis Kelamin" => "P", "No. Hp" => "081298765432", "Email" => "jane@example.com"],
-            ["No" => 3, "Nama" => "Michael Smith", "NIDN" => "567812345678", "Jenis Kelamin" => "L", "No. Hp" => "081234567890", "Email" => "michael@example.com"],
+            ["No" => 1, "Nama" => "John Doe", "NIDN" => "123481231231", "JenisKelamin" => "L", "Telepon" => "081241231312", "Email" => "youremail@gmail.com"],
+            ["No" => 2, "Nama" => "Jane Doe", "NIDN" => "987654321123", "JenisKelamin" => "P", "Telepon" => "081298765432", "Email" => "jane@example.com"],
+            ["No" => 3, "Nama" => "Michael Smith", "NIDN" => "567812345678", "JenisKelamin" => "L", "Telepon" => "081234567890", "Email" => "michael@example.com"],
         ]);
     }
 
     public function headings(): array
     {
-        return ["No", "Nama", "NIDN", "Jenis Kelamin", "No. Hp", "Email"];
+        return ["No", "Nama", "NIDN", "JenisKelamin", "Telepon", "Email"];
     }
 
     public function styles(Worksheet $sheet)

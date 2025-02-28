@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Str;
 
 use App\Exports\Dosen\SampleExport;
 use App\Exports\Dosen\DataExport;
@@ -120,7 +121,7 @@ class DosenController extends Controller
             }
 
             $data = [
-                'userId' => \Str::uuid(),
+                'userId' => Str::uuid(),
                 'email' => $request->email,
                 'name' => $request->name,
                 'password' => Hash::make($request->password),
@@ -240,7 +241,7 @@ class DosenController extends Controller
             Log::error("Error saat mengirim data: " . $th->getMessage());
             return $this->res->errorResponse($th->getMessage(), [], 500);
         }
-        \Log::info($request->all());
+        Log::info($request->all());
     }
 
     /**
@@ -370,29 +371,40 @@ class DosenController extends Controller
     public function dosen_import(Request $request)
     {
         $request->validate([
-            'dataImport' => 'required|string', // Pastikan base64 dikirim dalam string
+            'dataImport' => 'required|string',
         ]);
 
         try {
-            // Decode base64 menjadi stream tanpa menyimpan file
-            $fileContent = base64_decode($request->dataImport);
-            $tempFile = tmpfile();
-            fwrite($tempFile, $fileContent);
-            $metaData = stream_get_meta_data($tempFile);
-            $tempFilePath = $metaData['uri'];
+            // Pisahkan metadata (prefix) dari base64
+            if (str_contains($request->dataImport, ';base64,')) {
+                [, $base64Data] = explode(';base64,', $request->dataImport);
+            } else {
+                return $this->res->errorResponse("Format base64 tidak valid", [], 422);
+            }
 
-            // Import dari file sementara tanpa menyimpannya
-            Excel::import(new DosenImport, $tempFilePath);
+            // Decode base64 menjadi data mentah
+            $fileContent = base64_decode($base64Data, true);
+            if ($fileContent === false) {
+                return $this->res->errorResponse("Data base64 tidak valid", [], 422);
+            }
 
-            // Tutup file sementara setelah dipakai
-            fclose($tempFile);
+            // Simpan ke file sementara
+            $tempPath = storage_path('app/temp_import.xlsx');
+            file_put_contents($tempPath, $fileContent);
+
+            // Import file Excel dari path
+            Excel::import(new DosenImport, $tempPath);
+
+            // Hapus file setelah import selesai
+            unlink($tempPath);
 
             return $this->res->successResponse('Data dosen berhasil diimport', [], 200);
         } catch (\Exception $e) {
-            \Log::info($e);
+            Log::error('Import Excel Error: ' . $e->getMessage());
             return $this->res->errorResponse("Beberapa data gagal diimport", [], 422);
         }
     }
+
 
     public function __rules(string $type, Request $request, $user = null) {
         $message = [
