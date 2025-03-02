@@ -74,4 +74,36 @@ Route::middleware('auth:sanctum')->group(function() {
         Route::get('/faculty', 'faculty');
         Route::get('/department', 'prodi');
     });
+
+    Route::controller(\App\Http\Controllers\Api\BannerController::class)->prefix('banner')->group(function(){
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::post('/store', 'store');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
+
+    Route::controller(\App\Http\Controllers\Api\NewsController::class)->prefix('news')->group(function(){
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::post('/store', 'store');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
+
+    Route::controller(\App\Http\Controllers\Api\SettingController::class)->prefix('setting')->group(function(){
+        Route::get('/', 'index');
+        Route::put('/profil', 'profil');
+        Route::put('/petunjuk', 'petunjuk');
+        Route::put('/prosedur', 'prosedur');
+    });
+});
+
+Route::controller(\App\Http\Controllers\Api\LandingPageController::class)->prefix('landing-page')->group(function(){
+    Route::get('/banner', 'banner');
+    Route::get('/profil', 'profil');
+    Route::get('/petunjuk', 'petunjuk');
+    Route::get('/prosedur', 'prosedur');
+    Route::get('/news', 'news');
+    Route::get('/news/{slug}', 'news_detail');
 });
