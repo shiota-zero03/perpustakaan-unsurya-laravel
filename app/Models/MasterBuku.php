@@ -5,19 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Admin extends Model
+class MasterBuku extends Model
 {
     use HasFactory;
-    protected $table = 'admins';
+    protected $table = 'master_bukus';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'userId',
-        'profilePicture',
-        'position',
-        'gender',
+        'book_id',
+        'type',
     ];
-    public function user()
+
+    public function buku()
     {
-        return $this->belongsTo(User::class, 'userId');
+        return $this->hasOne(Buku::class, 'book_id');
     }
 }

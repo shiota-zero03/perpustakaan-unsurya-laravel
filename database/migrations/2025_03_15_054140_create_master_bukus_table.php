@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('visitors', function (Blueprint $table) {
+        Schema::create('master_bukus', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('userId')->nullable()->constrained('users')->onDelete('set null');
-            $table->string('name');
-            $table->string('activity');
-            $table->date('date');
-            $table->time('time');
+            $table->string('book_id')->unique();
+            $table->enum('type', ['Karya Tulis', 'Buku Digital', 'Buku Fisik']);
             $table->timestamps();
         });
     }
@@ -27,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('visitors');
+        Schema::dropIfExists('master_bukus');
     }
 };

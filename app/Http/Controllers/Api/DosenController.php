@@ -300,7 +300,7 @@ class DosenController extends Controller
             ];
 
             if($request->profilePicture) {
-                $data['profilePicture'] = $image;
+                $dataDosen['profilePicture'] = $image;
             }
 
             Teacher::find($user->teacher->id)->update($dataDosen);

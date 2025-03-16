@@ -26,6 +26,10 @@ Route::prefix('/auth')->controller(\App\Http\Controllers\Api\AuthController::cla
     Route::post('/reset-password', 'reset_password');
 });
 
+Route::controller(\App\Http\Controllers\Api\PublicController::class)->group(function(){
+    Route::post('/visitor', 'visitor_store');
+});
+
 Route::middleware('auth:sanctum')->group(function() {
     Route::get('/profile', [\App\Http\Controllers\Api\AuthController::class, 'get_profile']);
     Route::post('/auth/sign-out', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
@@ -52,6 +56,31 @@ Route::middleware('auth:sanctum')->group(function() {
         Route::post('/action-selected', 'selected_action');
         Route::put('/update/{id}', 'update');
         Route::delete('/{id}', 'destroy');
+    });
+
+    Route::controller(\App\Http\Controllers\Api\PetugasController::class)->prefix('petugas')->group(function(){
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::post('/store', 'store');
+        Route::post('/action-selected', 'selected_action');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
+
+    Route::controller(\App\Http\Controllers\Api\BukuFisikController::class)->prefix('buku-fisik')->group(function(){
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::get('/sample/export', 'sample_export');
+        Route::get('/data/export', 'buku_fisik_export');
+        Route::post('/data/import', 'buku_fisik_import');
+        Route::post('/store', 'store');
+        Route::post('/action-selected', 'selected_action');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
+
+    Route::controller(\App\Http\Controllers\Api\VisitorController::class)->group(function(){
+        Route::get('/visitor', 'index');
     });
 
     Route::controller(\App\Http\Controllers\Api\FakultasController::class)->prefix('fakultas')->group(function(){

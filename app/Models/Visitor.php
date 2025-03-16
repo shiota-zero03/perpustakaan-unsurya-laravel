@@ -8,4 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class Visitor extends Model
 {
     use HasFactory;
+    protected $table = 'visitors';
+    protected $primaryKey = 'id';
+    protected $fillable = [
+        'userId',
+        'name',
+        'activity',
+        'date',
+        'time',
+    ];
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'userId');
+    }
 }

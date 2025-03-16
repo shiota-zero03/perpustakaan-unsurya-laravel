@@ -200,16 +200,14 @@ class AuthController extends Controller
     public function get_profile()
     {
         $user = Auth::user();
-        $data = [];
-        if($user->role == 'SuperAdmin') {
-            $data = [
-                'name' => $user->name,
-                'role' => $user->role,
-                'identityNumber' => $user->identityNumber,
-                'email' => $user->email,
-                'status' => $user->status,
-            ];
-        }
+        $data = [
+            'name' => $user->name,
+            'role' => $user->role,
+            'identityNumber' => $user->identityNumber,
+            'email' => $user->email,
+            'status' => $user->status,
+        ];
+
         return $this->res->successResponse('Berhasil mendapatkan data profil', $data);
     }
 

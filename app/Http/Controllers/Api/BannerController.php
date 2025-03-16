@@ -40,8 +40,9 @@ class BannerController extends Controller
         $items = $datas->map(function ($user) {
             return [
                 'id' =>  $user->id,
-                'name' =>  $user->name,
-                'code' => $user->code,
+                'title' =>  $user->title,
+                'subtitle' => $user->subtitle,
+                'picture' => $user->picture,
             ];
         });
 
