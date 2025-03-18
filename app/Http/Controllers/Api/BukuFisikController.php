@@ -81,7 +81,7 @@ class BukuFisikController extends Controller
             ]
         ];
 
-        return $this->res->successResponse('Data mahasiswa berhasil didapatkan', $data, 200);
+        return $this->res->successResponse('Data buku berhasil didapatkan', $data, 200);
     }
 
     /**
@@ -113,7 +113,7 @@ class BukuFisikController extends Controller
             ];
 
             if($request->cover) {
-                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'mahasiswa');
+                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'buku');
                 if(!$file['success']) {
                     return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['cover' => 'Format file tidak sesuai'], 422);
                 }
@@ -129,8 +129,8 @@ class BukuFisikController extends Controller
 
             $dataMahasiswa = [
                 'book_id' => $user->id,
-                'no_urut' => $request->no_urut,
                 'cover' => $image,
+                'no_urut' => $request->no_urut,
                 'kode_klasifikasi' => $request->kode_klasifikasi,
                 'judul' => $request->judul,
                 'penulis' => $request->penulis,
@@ -267,7 +267,7 @@ class BukuFisikController extends Controller
             ];
 
             if($request->cover) {
-                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'mahasiswa');
+                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'buku');
                 if(!$file['success']) {
                     return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['cover' => 'Format file tidak sesuai'], 422);
                 }
@@ -276,18 +276,18 @@ class BukuFisikController extends Controller
 
 
             $dataMahasiswa = [
-                'no_urut' => $user->buku->no_urut,
-                'cover' => $user->buku->cover,
-                'kode_klasifikasi' => $user->buku->kode_klasifikasi,
-                'judul' => $user->buku->judul,
-                'penulis' => $user->buku->penulis,
-                'penerbit' => $user->buku->penerbit,
-                'tahun_terbit' => $user->buku->tahun_terbit,
-                'isbn' => $user->buku->isbn,
-                'tanggal_masuk' => $user->buku->tanggal_masuk,
-                'kode_rak' => $user->buku->kode_rak,
-                'stok' => $user->buku->stok,
-                'denda_harian' => $user->buku->denda_harian,
+                'cover' => $image,
+                'no_urut' => $request->no_urut,
+                'kode_klasifikasi' => $request->kode_klasifikasi,
+                'judul' => $request->judul,
+                'penulis' => $request->penulis,
+                'penerbit' => $request->penerbit,
+                'tahun_terbit' => $request->tahun_terbit,
+                'isbn' => $request->isbn,
+                'tanggal_masuk' => $request->tanggal_masuk,
+                'kode_rak' => $request->kode_rak,
+                'stok' => $request->stok,
+                'denda_harian' => $request->denda_harian,
             ];
 
             if($request->cover) {
@@ -326,7 +326,7 @@ class BukuFisikController extends Controller
 
             DB::commit();
 
-            return $this->res->successResponse('Data mahasiswa berhasil dihapus', [], 200);
+            return $this->res->successResponse('Data buku berhasil dihapus', [], 200);
 
         } catch (\Throwable $th) {
             DB::rollBack();

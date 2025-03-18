@@ -79,6 +79,18 @@ Route::middleware('auth:sanctum')->group(function() {
         Route::delete('/{id}', 'destroy');
     });
 
+    Route::controller(\App\Http\Controllers\Api\BukuDigitalController::class)->prefix('buku-digital')->group(function(){
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::get('/sample/export', 'sample_export');
+        Route::get('/data/export', 'buku_digital_export');
+        Route::post('/data/import', 'buku_digital_import');
+        Route::post('/store', 'store');
+        Route::post('/action-selected', 'selected_action');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
+
     Route::controller(\App\Http\Controllers\Api\VisitorController::class)->group(function(){
         Route::get('/visitor', 'index');
     });

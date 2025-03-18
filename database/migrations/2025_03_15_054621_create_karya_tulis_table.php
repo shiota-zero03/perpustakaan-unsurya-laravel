@@ -39,7 +39,6 @@ return new class extends Migration
             $table->string('document_10')->nullable();
             $table->string('abstrak')->nullable();
             $table->timestamps();
-
         });
     }
 
