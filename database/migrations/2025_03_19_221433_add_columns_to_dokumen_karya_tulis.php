@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dokumen_karya_tulis', function (Blueprint $table) {
-            $table->id();
-            $table->string('judul_dokumen');
-            $table->string('file_dokumen');
-            $table->timestamps();
+        Schema::table('dokumen_karya_tulis', function (Blueprint $table) {
+            $table->foreignId('karya_id')->constrained('karya_tulis')->onDelete('cascade');
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dokumen_karya_tulis');
+        Schema::table('dokumen_karya_tulis', function (Blueprint $table) {
+            //
+        });
     }
 };

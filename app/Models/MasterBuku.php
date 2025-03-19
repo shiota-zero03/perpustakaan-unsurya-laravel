@@ -19,4 +19,9 @@ class MasterBuku extends Model
     {
         return $this->hasOne(Buku::class, 'book_id');
     }
+
+    public function karya()
+    {
+        return $this->hasOne(KaryaTulis::class, 'book_id');
+    }
 }

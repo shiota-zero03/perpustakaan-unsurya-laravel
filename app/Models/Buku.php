@@ -25,6 +25,7 @@ class Buku extends Model
         'stok',
         'denda_harian',
         'link_book',
+        'dipinjam'
     ];
 
     public function master()

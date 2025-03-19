@@ -91,6 +91,16 @@ Route::middleware('auth:sanctum')->group(function() {
         Route::delete('/{id}', 'destroy');
     });
 
+    Route::controller(\App\Http\Controllers\Api\BukuKaryaTulisController::class)->prefix('karya-tulis')->group(function(){
+        Route::get('/', 'index');
+        Route::get('/{id}', 'show');
+        Route::get('/data/export', 'karya_export');
+        Route::post('/store', 'store');
+        Route::post('/action-selected', 'selected_action');
+        Route::put('/update/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
+    });
+
     Route::controller(\App\Http\Controllers\Api\VisitorController::class)->group(function(){
         Route::get('/visitor', 'index');
     });
