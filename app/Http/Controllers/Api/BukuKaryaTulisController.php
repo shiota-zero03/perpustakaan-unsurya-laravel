@@ -19,6 +19,7 @@ use App\Services\Base64FileService;
 
 use App\Models\MasterBuku;
 use App\Models\KaryaTulis;
+use App\Models\DokumenKaryaTulis;
 use App\Models\Buku;
 
 class BukuKaryaTulisController extends Controller
@@ -68,11 +69,11 @@ class BukuKaryaTulisController extends Controller
         $items = $users->map(function ($user) {
             return [
                 'id' => $user->book_id,
-                'penulis' => $user->buku->penulis,
-                'nim' => $user->buku->nim,
-                'cover' =>  $user->buku->cover,
-                'judul' => $user->buku->judul,
-                'tahun_terbit' => $user->buku->tahun_terbit,
+                'penulis' => $user->karya->penulis,
+                'nim' => $user->karya->nim,
+                'cover' =>  $user->karya->cover,
+                'judul' => $user->karya->judul,
+                'tahun_terbit' => $user->karya->tahun_terbit,
             ];
         });
 
@@ -120,7 +121,7 @@ class BukuKaryaTulisController extends Controller
             ];
 
             if($request->cover) {
-                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'buku');
+                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'karya-tulis');
                 if(!$file['success']) {
                     return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['cover' => 'Format file tidak sesuai'], 422);
                 }
@@ -137,26 +138,49 @@ class BukuKaryaTulisController extends Controller
             $dataMahasiswa = [
                 'book_id' => $user->id,
                 'cover' => $image,
-                'no_urut' => $request->no_urut,
-                'kode_klasifikasi' => $request->kode_klasifikasi,
                 'judul' => $request->judul,
                 'penulis' => $request->penulis,
-                'penerbit' => $request->penerbit,
+                'nim' => $request->nim,
+                'facultyId' => $request->facultyId,
+                'studyProgramId' => $request->studyProgramId,
                 'tahun_terbit' => $request->tahun_terbit,
-                'isbn' => $request->isbn,
+                'jenis' => $request->jenis,
+                'no_urut' => $request->no_urut,
+                'kode_klasifikasi' => $request->kode_klasifikasi,
                 'tanggal_masuk' => $request->tanggal_masuk,
                 'kode_rak' => $request->kode_rak,
-                'stok' => $request->stok,
-                'denda_harian' => $request->denda_harian,
+                'abstrak' => $request->abstrak,
             ];
 
-            Buku::create($dataMahasiswa);
+            $karyaTulisStore = KaryaTulis::create($dataMahasiswa);
+
+            if($request->document) {
+                $mimeMapPdf = [
+                    "application/pdf" => "pdf"
+                ];
+                foreach ($request->document as $key => $document) {
+                    $filePDFDocument = null;
+                    if($document['file']) {
+                        $filePDF = Base64FileService::saveBase64File($document['file'], $mimeMapPdf, 'document-karya');
+                        if(!$filePDF['success']) {
+                            return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['document' => 'Format file tidak sesuai'], 422);
+                        }
+                        $filePDFDocument = $filePDF['filePath'];
+                    }
+
+                    DokumenKaryaTulis::create([
+                        'karya_id' => $karyaTulisStore->id,
+                        'judul_dokumen' => $document['title'],
+                        'file_dokumen' => $filePDFDocument,
+                    ]);
+                }
+            }
 
             $dataToShow = array_merge($data, $dataMahasiswa);
 
             DB::commit();
 
-            return $this->res->successResponse('Data buku berhasil ditambahkan', $dataToShow, 201);
+            return $this->res->successResponse('Data karya tulis berhasil ditambahkan', $dataToShow, 201);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -173,31 +197,49 @@ class BukuKaryaTulisController extends Controller
         try {
             DB::beginTransaction();
 
-            $user = MasterBuku::where('book_id', $id)->where('type', 'Karya Tulis')->with(['buku'])->first();
+            $user = MasterBuku::where('book_id', $id)->where('type', 'Karya Tulis')->with(['karya'])->first();
             if(!$user) {
                 return $this->res->errorResponse("Buku dengan id {$id} tidak ditemukan", [], 404);
             }
 
+            $dokumen = [];
+            foreach ($user->karya->dokumen as $key => $document) {
+                $dokumen[] = [
+                    "id" => $document->id,
+                    "title" => $document->judul_dokumen,
+                    "file" => $document->file_dokumen
+                ];
+            }
 
             $data = [
                 'id' => $user->book_id,
-                'no_urut' => $user->buku->no_urut,
-                'cover' => $user->buku->cover,
-                'kode_klasifikasi' => $user->buku->kode_klasifikasi,
-                'judul' => $user->buku->judul,
-                'penulis' => $user->buku->penulis,
-                'penerbit' => $user->buku->penerbit,
-                'tahun_terbit' => $user->buku->tahun_terbit,
-                'isbn' => $user->buku->isbn,
-                'tanggal_masuk' => $user->buku->tanggal_masuk,
-                'kode_rak' => $user->buku->kode_rak,
-                'stok' => $user->buku->stok,
-                'denda_harian' => $user->buku->denda_harian,
+                'no_urut' => $user->karya->no_urut,
+                'cover' => $user->karya->cover,
+                'kode_klasifikasi' => $user->karya->kode_klasifikasi,
+                'judul' => $user->karya->judul,
+                'penulis' => $user->karya->penulis,
+                'nim' => $user->karya->nim,
+                'faculty' => [
+                    'id' => $user->karya->fakultas->id ?? '',
+                    'name' => $user->karya->fakultas->name ?? ''
+                ],
+                'department' => [
+                    'id' => $user->karya->prodi->id ?? '',
+                    'name' => $user->karya->prodi->name ?? ''
+                ],
+                'tahun_terbit' => $user->karya->tahun_terbit,
+                'jenis' => $user->karya->jenis,
+                'no_urut' => $user->karya->no_urut,
+                'kode_klasifikasi' => $user->karya->kode_klasifikasi,
+                'tanggal_masuk' => $user->karya->tanggal_masuk,
+                'kode_rak' => $user->karya->kode_rak,
+                'abstrak' => $user->karya->abstrak,
+                'dokumen' => $dokumen
             ];
 
             DB::commit();
 
-            return $this->res->successResponse('Data buku berhasil didapatkan', $data, 200);
+            return $this->res->successResponse('Data karya tulis berhasil didapatkan', $data, 200);
 
         } catch (\Throwable $th) {
             DB::rollback();
@@ -224,7 +266,7 @@ class BukuKaryaTulisController extends Controller
 
             $dataId = [];
             foreach ($request->selectedId as $key => $value) {
-                $userUpdate = MasterBuku::where('book_id', $value)->with(['buku'])->first();
+                $userUpdate = MasterBuku::where('book_id', $value)->with(['karya'])->first();
                 if(!$userUpdate) {
                     $dataId[] = $value;
                 } else {
@@ -253,9 +295,9 @@ class BukuKaryaTulisController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $user = MasterBuku::where('book_id', $id)->with(['buku'])->first();
+        $user = MasterBuku::where('book_id', $id)->with(['karya'])->first();
         if(!$user) {
-            return $this->res->errorResponse("Buku dengan id {$id} tidak ditemukan", [], 404);
+            return $this->res->errorResponse("Karya tulis dengan id {$id} tidak ditemukan", [], 404);
         }
 
         try {
@@ -274,7 +316,7 @@ class BukuKaryaTulisController extends Controller
             ];
 
             if($request->cover) {
-                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'buku');
+                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'karya-tulis');
                 if(!$file['success']) {
                     return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['cover' => 'Format file tidak sesuai'], 422);
                 }
@@ -283,31 +325,59 @@ class BukuKaryaTulisController extends Controller
 
 
             $dataMahasiswa = [
-                'cover' => $image,
-                'no_urut' => $request->no_urut,
-                'kode_klasifikasi' => $request->kode_klasifikasi,
                 'judul' => $request->judul,
                 'penulis' => $request->penulis,
-                'penerbit' => $request->penerbit,
+                'nim' => $request->nim,
+                'facultyId' => $request->facultyId,
+                'studyProgramId' => $request->studyProgramId,
                 'tahun_terbit' => $request->tahun_terbit,
-                'isbn' => $request->isbn,
+                'jenis' => $request->jenis,
+                'no_urut' => $request->no_urut,
+                'kode_klasifikasi' => $request->kode_klasifikasi,
                 'tanggal_masuk' => $request->tanggal_masuk,
                 'kode_rak' => $request->kode_rak,
-                'stok' => $request->stok,
-                'denda_harian' => $request->denda_harian,
+                'abstrak' => $request->abstrak,
             ];
 
             if($request->cover) {
                 $dataMahasiswa['cover'] = $image;
             }
 
-            Buku::find($user->buku->id)->update($dataMahasiswa);
+            KaryaTulis::find($user->karya->id)->update($dataMahasiswa);
+
+            DokumenKaryaTulis::where('karya_id', $user->karya->id)->delete();
+
+            if($request->document) {
+                $mimeMapPdf = [
+                    "application/pdf" => "pdf"
+                ];
+                foreach ($request->document as $key => $document) {
+                    $filePDFDocument = null;
+                    if($document['id']) {
+                        $filePDFDocument = $document['file'];
+                    } else {
+                        if($document['file']) {
+                            $filePDF = Base64FileService::saveBase64File($document['file'], $mimeMapPdf, 'document-karya');
+                            if(!$filePDF['success']) {
+                                return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['document' => 'Format file tidak sesuai'], 422);
+                            }
+                            $filePDFDocument = $filePDF['filePath'];
+                        }
+                    }
+
+                    DokumenKaryaTulis::create([
+                        'karya_id' => $user->karya->id,
+                        'judul_dokumen' => $document['title'],
+                        'file_dokumen' => $filePDFDocument,
+                    ]);
+                }
+            }
 
             $dataToShow = array_merge($dataMahasiswa);
 
             DB::commit();
 
-            return $this->res->successResponse('Data buku berhasil diperbarui', $dataToShow, 200);
+            return $this->res->successResponse('Data karya tulis berhasil diperbarui', $dataToShow, 200);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -321,9 +391,9 @@ class BukuKaryaTulisController extends Controller
      */
     public function destroy(string $id)
     {
-        $user = MasterBuku::where('book_id', $id)->with(['buku'])->first();
+        $user = MasterBuku::where('book_id', $id)->with(['karya'])->first();
         if(!$user) {
-            return $this->res->errorResponse("Buku dengan id {$id} tidak ditemukan", [], 404);
+            return $this->res->errorResponse("Karya tulis dengan id {$id} tidak ditemukan", [], 404);
         }
 
         try {
@@ -333,7 +403,7 @@ class BukuKaryaTulisController extends Controller
 
             DB::commit();
 
-            return $this->res->successResponse('Data buku berhasil dihapus', [], 200);
+            return $this->res->successResponse('Data karya tulis berhasil dihapus', [], 200);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -342,12 +412,7 @@ class BukuKaryaTulisController extends Controller
         }
     }
 
-    public function sample_export()
-    {
-        return Excel::download(new BukuFisikSampleExport(), 'sample_data_buku_fisik.xlsx');
-    }
-
-    public function buku_fisik_export()
+    public function karya_export()
     {
         $users = MasterBuku::where('type', 'Karya Tulis')->with(['buku'])->get();
         $items = $users->map(function ($user, $index) {
@@ -369,44 +434,6 @@ class BukuKaryaTulisController extends Controller
         return Excel::download(new BukuFisikExport($items), 'data_export.xlsx');
     }
 
-    public function buku_fisik_import(Request $request)
-    {
-        $request->validate([
-            'dataImport' => 'required|string',
-        ]);
-
-        try {
-            // Pisahkan metadata (prefix) dari base64
-            if (str_contains($request->dataImport, ';base64,')) {
-                [, $base64Data] = explode(';base64,', $request->dataImport);
-            } else {
-                return $this->res->errorResponse("Format base64 tidak valid", [], 422);
-            }
-
-            // Decode base64 menjadi data mentah
-            $fileContent = base64_decode($base64Data, true);
-            if ($fileContent === false) {
-                return $this->res->errorResponse("Data base64 tidak valid", [], 422);
-            }
-
-            // Simpan ke file sementara
-            $tempPath = storage_path('app/temp_import.xlsx');
-            file_put_contents($tempPath, $fileContent);
-
-            // Import file Excel dari path
-            Excel::import(new BukuFisikImport, $tempPath);
-
-            // Hapus file setelah import selesai
-            unlink($tempPath);
-
-            return $this->res->successResponse('Data buku berhasil diimport', [], 200);
-        } catch (\Exception $e) {
-            Log::error('Import Excel Error: ' . $e->getMessage());
-            return $this->res->errorResponse("Beberapa data gagal diimport", [], 422);
-        }
-    }
-
-
     public function __rules(string $type, Request $request, $user = null) {
         $message = [
             "no_urut.string" => "Nomor urut tidak valid.",
@@ -425,16 +452,12 @@ class BukuKaryaTulisController extends Controller
             "penulis.max" => "Penulis maksimal harus memiliki 255 karakter.",
             "penulis.required" => "Penulis wajib diisi.",
 
-            "penerbit.string" => "Penerbit tidak valid.",
-            "penerbit.max" => "Penerbit maksimal harus memiliki 255 karakter.",
-            "penerbit.required" => "Penerbit wajib diisi.",
+            "nim.string" => "NIM tidak valid.",
+            "nim.max" => "NIM maksimal harus memiliki 255 karakter.",
+            "nim.required" => "NIM wajib diisi.",
 
             "tahun_terbit.numeric" => "Tahun terbit tidak valid.",
             "tahun_terbit.required" => "Tahun terbit wajib diisi.",
-
-            "isbn.string" => "ISBN tidak valid.",
-            "isbn.max" => "ISBN maksimal harus memiliki 255 karakter.",
-            "isbn.required" => "ISBN wajib diisi.",
 
             "tanggal_masuk.string" => "Tanggal masuk tidak valid.",
             "tanggal_masuk.max" => "Tanggal masuk maksimal harus memiliki 255 karakter.",
@@ -444,11 +467,20 @@ class BukuKaryaTulisController extends Controller
             "kode_rak.max" => "Kode rak maksimal harus memiliki 255 karakter.",
             "kode_rak.required" => "Kode rak wajib diisi.",
 
-            "stok.numeric" => "Stok tidak valid.",
-            "stok.required" => "Stok wajib diisi.",
+            "abstrak.string" => "Abstrak tidak valid.",
+            "abstrak.required" => "Abstrak wajib diisi.",
 
-            "denda_harian.numeric" => "Denda harian tidak valid.",
-            "denda_harian.required" => "Denda harian wajib diisi.",
+            "facultyId.string" =>"ID fakultas tidak valid.",
+            "facultyId.max" =>"ID fakultas maksimal harus memiliki 255 karakter.",
+            "facultyId.required" =>"ID fakultas wajib diisi.",
+
+            "studyProgramId.string" =>"ID program studi tidak valid.",
+            "studyProgramId.max" =>"ID program studi maksimal harus memiliki 255 karakter.",
+            "studyProgramId.required" =>"ID program studi wajib diisi.",
+
+            "jenis.string" =>"Jenis karya tulis tidak valid.",
+            "jenis.max" =>"Jenis karya tulis maksimal harus di antara Skripsi, TA, Tesis, Disertasi.",
+            "jenis.required" =>"Jenis karya tulis wajib diisi.",
 
         ];
         if($type == 'create') {
@@ -457,13 +489,14 @@ class BukuKaryaTulisController extends Controller
                 "kode_klasifikasi" => ['required', 'string', 'max:255'],
                 "judul" => ['required', 'string', 'max:255'],
                 "penulis" => ['required', 'string', 'max:255'],
-                "penerbit" => ['required', 'string', 'max:255'],
+                "nim" => ['required', 'string', 'max:255'],
                 "tahun_terbit" => ['required', 'numeric'],
-                "isbn" => ['required', 'string', 'max:255'],
                 "tanggal_masuk" => ['required', 'string', 'max:255'],
                 "kode_rak" => ['required', 'string', 'max:255'],
-                "stok" => ['required', 'numeric'],
-                "denda_harian" => ['required', 'numeric'],
+                "abstrak" => ['required', 'string'],
+                "jenis" => ['required', 'string', 'in:Skripsi,TA,Tesis,Disertasi'],
+                'facultyId' => ['required', 'numeric'],
+                'studyProgramId' => ['required', 'numeric'],
             ], $message);
         } elseif ($type == 'update') {
             $rules = [
@@ -471,13 +504,14 @@ class BukuKaryaTulisController extends Controller
                 "kode_klasifikasi" => ['required', 'string', 'max:255'],
                 "judul" => ['required', 'string', 'max:255'],
                 "penulis" => ['required', 'string', 'max:255'],
-                "penerbit" => ['required', 'string', 'max:255'],
+                "nim" => ['required', 'string', 'max:255'],
                 "tahun_terbit" => ['required', 'numeric'],
-                "isbn" => ['required', 'string', 'max:255'],
                 "tanggal_masuk" => ['required', 'string', 'max:255'],
                 "kode_rak" => ['required', 'string', 'max:255'],
-                "stok" => ['required', 'numeric'],
-                "denda_harian" => ['required', 'numeric'],
+                "jenis" => ['required', 'string', 'in:Skripsi,TA,Tesis,Disertasi'],
+                "abstrak" => ['required', 'string'],
+                'facultyId' => ['required', 'numeric'],
+                'studyProgramId' => ['required', 'numeric'],
             ];
 
             return Validator::make($request->all(), $rules, $message);

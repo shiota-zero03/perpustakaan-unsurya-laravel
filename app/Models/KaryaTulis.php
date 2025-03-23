@@ -33,8 +33,18 @@ class KaryaTulis extends Model
         return $this->belongsTo(MasterBuku::class, 'book_id');
     }
 
+    public function fakultas()
+    {
+        return $this->belongsTo(Faculty::class, 'facultyId');
+    }
+
+    public function prodi()
+    {
+        return $this->belongsTo(StudyProgram::class, 'studyProgramId');
+    }
+
     public function dokumen()
     {
-        return $this->hasMant(DokumenKaryaTulis::class, 'karya_id');
+        return $this->hasMany(DokumenKaryaTulis::class, 'karya_id');
     }
 }
