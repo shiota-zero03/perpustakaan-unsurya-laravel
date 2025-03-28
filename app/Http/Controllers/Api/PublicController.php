@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+
 use App\Models\User;
 use App\Models\Visitor;
+use App\Models\Banner;
+use App\Models\News;
+
 use App\Resources\Responses\ApiResponse;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -65,12 +69,68 @@ class PublicController extends Controller
             $create = Visitor::firstOrCreate($data);
             DB::commit();
 
-            return $this->res->successResponse('Data pengunjung berhasil ditambahkan', $data, 201);
+            return $this->res->successResponse('Data pengunjung berhasil ditambahkan', $create, 201);
 
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error("Error saat mengirim data: " . $th->getMessage());
             return $this->res->errorResponse($th->getMessage(), [], 500);
         }
+    }
+
+    public function banner ()
+    {
+        $banner = Banner::all()->toArray();
+        return $this->res->successResponse('Data pengunjung berhasil ditambahkan', $banner, 201);
+    }
+
+    public function news (Request $request)
+    {
+        $limit = $request->input('limit', 10); // Default 10 data per halaman
+        $page = $request->input('page', 1); // Default halaman pertama
+        $title = $request->input('title');
+
+        $query = News::orderByDesc('id');
+
+        if (!empty($title)) {
+            $query->where('title', 'like', "%{$title}%");
+        }
+
+        $users = $query->paginate($limit, ['*'], 'page', $page);
+        $items = $users->map(function ($user) {
+            return [
+                'title' => $user->title,
+                'author' => $user->author,
+                'created' => $user->created,
+                'tags' => $user->tags,
+                'picture' => $user->picture,
+                'content' => $user->content,
+                'slug' => $user->slug
+            ];
+        });
+
+        $data = [
+            'data' => $items,
+            'pagination' => [
+                'from' => ($users->currentPage() - 1) * $users->perPage() + 1,
+                'to' => min($users->currentPage() * $users->perPage(), $users->total()),
+                'currentPage' => $users->currentPage(),
+                'totalPages' => $users->lastPage(),
+                'totalItems' => $users->total(),
+                'limit' => $users->perPage(),
+            ]
+        ];
+
+        return $this->res->successResponse('Data berita berhasil didapatkan', $data, 200);
+    }
+
+    public function newsDetail (string $slug)
+    {
+        $news = News::where('slug', $slug)->first();
+        if(!$news) {
+            return $this->res->errorResponse('Berita tidak ditemukan', [], 404);
+        }
+
+        return $this->res->successResponse('Data berita berhasil ditambahkan', $news, 201);
     }
 }

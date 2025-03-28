@@ -31,7 +31,7 @@ class BannerController extends Controller
 
         $query = Banner::orderByDesc('id');
 
-        if (!empty($name)) {
+        if (!empty($title)) {
             $query->where('title', 'like', "%{$title}%");
         }
 
@@ -84,32 +84,27 @@ class BannerController extends Controller
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
 
-            $image = null;
-            $mimeMap = [
-                "image/png" => "png",
-                "image/jpeg" => "jpg",
-                "image/jpg" => "jpg"
-            ];
+            $imageUrl = null;
 
-            if($request->picture) {
-                $file = Base64FileService::saveBase64File($request->picture, $mimeMap, 'banner');
-                if(!$file['success']) {
-                    return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['picture' => 'Format file tidak sesuai'], 422);
-                }
-                $image = $file['filePath'];
+            if ($request->hasFile('picture')) {
+                $file = $request->file('picture');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/banner');
+                $file->move($destinationPath, $fileName);
+                $imageUrl = url("assets/picture/banner/{$fileName}");
             }
 
             $data = [
                 'title' => $request->title,
                 'subtitle' => $request->subtitle,
-                'picture' => $image
+                'picture' => $imageUrl
             ];
 
             Banner::create($data);
 
             DB::commit();
 
-            return $this->res->successResponse('Data fakultas berhasil ditambahkan', $data, 201);
+            return $this->res->successResponse('Data banner berhasil ditambahkan', $data, 201);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -176,19 +171,14 @@ class BannerController extends Controller
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
 
-            $image = null;
-            $mimeMap = [
-                "image/png" => "png",
-                "image/jpeg" => "jpg",
-                "image/jpg" => "jpg"
-            ];
+            $imageUrl = null;
 
-            if($request->picture) {
-                $file = Base64FileService::saveBase64File($request->picture, $mimeMap, 'banner');
-                if(!$file['success']) {
-                    return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['picture' => 'Format file tidak sesuai'], 422);
-                }
-                $image = $file['filePath'];
+            if ($request->hasFile('picture')) {
+                $file = $request->file('picture');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/banner');
+                $file->move($destinationPath, $fileName);
+                $imageUrl = url("assets/picture/banner/{$fileName}");
             }
 
             $data = [
@@ -196,15 +186,15 @@ class BannerController extends Controller
                 'subtitle' => $request->subtitle,
             ];
 
-            if($request->picture) {
-                $data['picture'] = $image;
+            if ($request->hasFile('picture')) {
+                $data['picture'] = $imageUrl;
             }
 
             $datas->update($data);
 
             DB::commit();
 
-            return $this->res->successResponse('Data fakultas berhasil diperbarui', $data, 200);
+            return $this->res->successResponse('Data banner berhasil diperbarui', $data, 200);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -230,7 +220,7 @@ class BannerController extends Controller
 
             DB::commit();
 
-            return $this->res->successResponse('Data fakultas berhasil dihapus', [], 200);
+            return $this->res->successResponse('Data banner berhasil dihapus', [], 200);
 
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -245,14 +235,15 @@ class BannerController extends Controller
             "title.min" =>"Judul minimal harus memiliki 3 karakter.",
             "title.max" =>"Judul maksimal harus memiliki 255 karakter.",
             "title.required" =>"Judul wajib diisi.",
-            "picture.string" =>"Gambar banner tidak valid.",
+            "picture.file" =>"Gambar banner tidak valid.",
             "picture.required" =>"Gambar banner wajib diisi.",
+            "picture.mimes" => "Format gambar yang diizinkan adalah png, jpg atau jpeg"
 
         ];
         if($type == 'create') {
             return Validator::make($request->all(), [
                 'title' => ['required', 'string', 'min:3', 'max:255'],
-                'picture' => ['required', 'string'],
+                'picture' => ['required', 'file', 'mimes:png,jpg,jpeg'],
             ], $message);
         } elseif ($type == 'update') {
             $rules = [
@@ -260,7 +251,7 @@ class BannerController extends Controller
             ];
 
             if($request->picture) {
-                $rules['picture'] = ['required', 'string'];
+                $rules['picture'] = ['required', 'file', 'mimes:png,jpg,jpeg'];
             }
 
             return Validator::make($request->all(), $rules, $message);

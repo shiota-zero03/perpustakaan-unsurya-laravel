@@ -109,19 +109,14 @@ class MahasiswaController extends Controller
             if ($validator->fails()) {
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
-            $image = null;
-            $mimeMap = [
-                "image/png" => "png",
-                "image/jpeg" => "jpg",
-                "image/jpg" => "jpg"
-            ];
+            $imageUrl = null;
 
-            if($request->profilePicture) {
-                $file = Base64FileService::saveBase64File($request->profilePicture, $mimeMap, 'mahasiswa');
-                if(!$file['success']) {
-                    return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['profilePicture' => 'Format file tidak sesuai'], 422);
-                }
-                $image = $file['filePath'];
+            if ($request->hasFile('profilePicture')) {
+                $file = $request->file('profilePicture');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/profile');
+                $file->move($destinationPath, $fileName);
+                $imageUrl = url("assets/picture/profile/{$fileName}");
             }
 
             $data = [
@@ -139,7 +134,7 @@ class MahasiswaController extends Controller
 
             $dataMahasiswa = [
                 'userId' => $user->id,
-                'profilePicture' => $image,
+                'profilePicture' => $imageUrl,
                 'gender' => $request->gender,
                 'phoneNumber' => $request->phoneNumber,
                 'facultyId' => $request->faculty,
@@ -276,19 +271,15 @@ class MahasiswaController extends Controller
             if ($validator->fails()) {
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
-            $image = null;
-            $mimeMap = [
-                "image/png" => "png",
-                "image/jpeg" => "jpg",
-                "image/jpg" => "jpg"
-            ];
 
-            if($request->profilePicture) {
-                $file = Base64FileService::saveBase64File($request->profilePicture, $mimeMap, 'mahasiswa');
-                if(!$file['success']) {
-                    return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['profilePicture' => 'Format file tidak sesuai'], 422);
-                }
-                $image = $file['filePath'];
+            $imageUrl = null;
+
+            if ($request->hasFile('profilePicture')) {
+                $file = $request->file('profilePicture');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/profile');
+                $file->move($destinationPath, $fileName);
+                $imageUrl = url("assets/picture/profile/{$fileName}");
             }
 
             $data = [
@@ -318,7 +309,7 @@ class MahasiswaController extends Controller
             ];
 
             if($request->profilePicture) {
-                $dataMahasiswa['profilePicture'] = $image;
+                $dataMahasiswa['profilePicture'] = $imageUrl;
             }
 
             Student::find($user->student->id)->update($dataMahasiswa);
@@ -474,6 +465,10 @@ class MahasiswaController extends Controller
             "department.max" =>"ID program studi maksimal harus memiliki 255 karakter.",
             "department.required" =>"ID program studi wajib diisi.",
 
+            "profilePicture.file" =>"Gambar tidak valid.",
+            "profilePicture.required" =>"Gambar wajib diisi.",
+            "profilePicture.mimes" => "Format gambar yang diizinkan adalah png, jpg atau jpeg"
+
         ];
         if($type == 'create') {
             return Validator::make($request->all(), [
@@ -487,6 +482,7 @@ class MahasiswaController extends Controller
                 'validUntil' => ['required', 'string'],
                 'faculty' => ['required', 'numeric'],
                 'department' => ['required', 'numeric'],
+                'profilePicture' => ['required', 'file', 'mimes:png,jpg,jpeg'],
             ], $message);
         } elseif ($type == 'update') {
             $rules = [
@@ -498,6 +494,10 @@ class MahasiswaController extends Controller
                 'faculty' => ['required', 'numeric'],
                 'department' => ['required', 'numeric'],
             ];
+
+            if($request->profilePicture) {
+                $rules['profilePicture'] = ['required', 'file', 'mimes:png,jpg,jpeg'];
+            }
 
             if($request->email !== $user->email) {
                 $rules['email'] = ['required', 'email', 'min:3', 'max:255', 'unique:users,email'];

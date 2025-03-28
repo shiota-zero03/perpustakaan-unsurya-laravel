@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('dendas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('transactionId')->constrained('users')->onDelete('cascade');
+            $table->foreignId('transactionId')->constrained('transactions')->onDelete('cascade');
             $table->integer('total_keterlambatan');
             $table->double('denda_keterlambatan');
             $table->double('total_denda');

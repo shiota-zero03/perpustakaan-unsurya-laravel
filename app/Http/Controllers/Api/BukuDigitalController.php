@@ -105,19 +105,14 @@ class BukuDigitalController extends Controller
             if ($validator->fails()) {
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
-            $image = null;
-            $mimeMap = [
-                "image/png" => "png",
-                "image/jpeg" => "jpg",
-                "image/jpg" => "jpg"
-            ];
+            $imageUrl = null;
 
-            if($request->cover) {
-                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'buku');
-                if(!$file['success']) {
-                    return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['cover' => 'Format file tidak sesuai'], 422);
-                }
-                $image = $file['filePath'];
+            if ($request->hasFile('cover')) {
+                $file = $request->file('cover');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/buku');
+                $file->move($destinationPath, $fileName);
+                $imageUrl = url("assets/picture/buku/{$fileName}");
             }
 
             $data = [
@@ -129,7 +124,7 @@ class BukuDigitalController extends Controller
 
             $dataMahasiswa = [
                 'book_id' => $user->id,
-                'cover' => $image,
+                'cover' => $imageUrl,
                 'judul' => $request->judul,
                 'penulis' => $request->penulis,
                 'penerbit' => $request->penerbit,
@@ -249,24 +244,18 @@ class BukuDigitalController extends Controller
             if ($validator->fails()) {
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
-            $image = null;
-            $mimeMap = [
-                "image/png" => "png",
-                "image/jpeg" => "jpg",
-                "image/jpg" => "jpg"
-            ];
+            $imageUrl = null;
 
-            if($request->cover) {
-                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'buku');
-                if(!$file['success']) {
-                    return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['cover' => 'Format file tidak sesuai'], 422);
-                }
-                $image = $file['filePath'];
+            if ($request->hasFile('cover')) {
+                $file = $request->file('cover');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/buku');
+                $file->move($destinationPath, $fileName);
+                $imageUrl = url("assets/picture/buku/{$fileName}");
             }
 
 
             $dataMahasiswa = [
-                'cover' => $image,
                 'judul' => $request->judul,
                 'penulis' => $request->penulis,
                 'penerbit' => $request->penerbit,
@@ -276,7 +265,7 @@ class BukuDigitalController extends Controller
             ];
 
             if($request->cover) {
-                $dataMahasiswa['cover'] = $image;
+                $dataMahasiswa['cover'] = $imageUrl;
             }
 
             Buku::find($user->buku->id)->update($dataMahasiswa);
@@ -406,6 +395,10 @@ class BukuDigitalController extends Controller
             "link_book.max" => "URL Buku maksimal harus memiliki 255 karakter.",
             "link_book.required" => "URL Buku wajib diisi.",
 
+            "cover.file" =>"Gambar tidak valid.",
+            "cover.required" =>"Gambar wajib diisi.",
+            "cover.mimes" => "Format gambar yang diizinkan adalah png, jpg atau jpeg"
+
         ];
         if($type == 'create') {
             return Validator::make($request->all(), [
@@ -415,6 +408,7 @@ class BukuDigitalController extends Controller
                 "tahun_terbit" => ['required', 'numeric'],
                 "isbn" => ['required', 'string', 'max:255'],
                 "link_book" => ['required', 'string', 'max:255'],
+                'cover' => ['required', 'file', 'mimes:png,jpg,jpeg'],
             ], $message);
         } elseif ($type == 'update') {
             $rules = [
@@ -425,6 +419,10 @@ class BukuDigitalController extends Controller
                 "isbn" => ['required', 'string', 'max:255'],
                 "link_book" => ['required', 'string', 'max:255'],
             ];
+
+            if($request->cover) {
+                $rules['cover'] = ['required', 'file', 'mimes:png,jpg,jpeg'];
+            }
 
             return Validator::make($request->all(), $rules, $message);
         }

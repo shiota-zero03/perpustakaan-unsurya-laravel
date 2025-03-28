@@ -105,19 +105,15 @@ class BukuFisikController extends Controller
             if ($validator->fails()) {
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
-            $image = null;
-            $mimeMap = [
-                "image/png" => "png",
-                "image/jpeg" => "jpg",
-                "image/jpg" => "jpg"
-            ];
 
-            if($request->cover) {
-                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'buku');
-                if(!$file['success']) {
-                    return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['cover' => 'Format file tidak sesuai'], 422);
-                }
-                $image = $file['filePath'];
+            $imageUrl = null;
+
+            if ($request->hasFile('cover')) {
+                $file = $request->file('cover');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/buku');
+                $file->move($destinationPath, $fileName);
+                $imageUrl = url("assets/picture/buku/{$fileName}");
             }
 
             $data = [
@@ -129,7 +125,7 @@ class BukuFisikController extends Controller
 
             $dataMahasiswa = [
                 'book_id' => $user->id,
-                'cover' => $image,
+                'cover' => $imageUrl,
                 'no_urut' => $request->no_urut,
                 'kode_klasifikasi' => $request->kode_klasifikasi,
                 'judul' => $request->judul,
@@ -259,24 +255,18 @@ class BukuFisikController extends Controller
             if ($validator->fails()) {
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
-            $image = null;
-            $mimeMap = [
-                "image/png" => "png",
-                "image/jpeg" => "jpg",
-                "image/jpg" => "jpg"
-            ];
+            $imageUrl = null;
 
-            if($request->cover) {
-                $file = Base64FileService::saveBase64File($request->cover, $mimeMap, 'buku');
-                if(!$file['success']) {
-                    return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['cover' => 'Format file tidak sesuai'], 422);
-                }
-                $image = $file['filePath'];
+            if ($request->hasFile('cover')) {
+                $file = $request->file('cover');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/buku');
+                $file->move($destinationPath, $fileName);
+                $imageUrl = url("assets/picture/buku/{$fileName}");
             }
 
 
             $dataMahasiswa = [
-                'cover' => $image,
                 'no_urut' => $request->no_urut,
                 'kode_klasifikasi' => $request->kode_klasifikasi,
                 'judul' => $request->judul,
@@ -291,7 +281,7 @@ class BukuFisikController extends Controller
             ];
 
             if($request->cover) {
-                $dataMahasiswa['cover'] = $image;
+                $dataMahasiswa['cover'] = $imageUrl;
             }
 
             Buku::find($user->buku->id)->update($dataMahasiswa);
@@ -443,6 +433,10 @@ class BukuFisikController extends Controller
             "denda_harian.numeric" => "Denda harian tidak valid.",
             "denda_harian.required" => "Denda harian wajib diisi.",
 
+            "cover.file" =>"Gambar tidak valid.",
+            "cover.required" =>"Gambar wajib diisi.",
+            "cover.mimes" => "Format gambar yang diizinkan adalah png, jpg atau jpeg"
+
         ];
         if($type == 'create') {
             return Validator::make($request->all(), [
@@ -457,6 +451,7 @@ class BukuFisikController extends Controller
                 "kode_rak" => ['required', 'string', 'max:255'],
                 "stok" => ['required', 'numeric'],
                 "denda_harian" => ['required', 'numeric'],
+                'cover' => ['required', 'file', 'mimes:png,jpg,jpeg'],
             ], $message);
         } elseif ($type == 'update') {
             $rules = [
@@ -472,6 +467,10 @@ class BukuFisikController extends Controller
                 "stok" => ['required', 'numeric'],
                 "denda_harian" => ['required', 'numeric'],
             ];
+
+            if($request->cover) {
+                $rules['cover'] = ['required', 'file', 'mimes:png,jpg,jpeg'];
+            }
 
             return Validator::make($request->all(), $rules, $message);
         }

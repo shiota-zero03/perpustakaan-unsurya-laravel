@@ -100,19 +100,14 @@ class PetugasController extends Controller
             if ($validator->fails()) {
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
-            $image = null;
-            $mimeMap = [
-                "image/png" => "png",
-                "image/jpeg" => "jpg",
-                "image/jpg" => "jpg"
-            ];
+            $imageUrl = null;
 
-            if($request->profilePicture) {
-                $file = Base64FileService::saveBase64File($request->profilePicture, $mimeMap, 'admin');
-                if(!$file['success']) {
-                    return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['profilePicture' => 'Format file tidak sesuai'], 422);
-                }
-                $image = $file['filePath'];
+            if ($request->hasFile('profilePicture')) {
+                $file = $request->file('profilePicture');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/profile');
+                $file->move($destinationPath, $fileName);
+                $imageUrl = url("assets/picture/profile/{$fileName}");
             }
 
             $data = [
@@ -129,7 +124,7 @@ class PetugasController extends Controller
 
             $dataDosen = [
                 'userId' => $user->id,
-                'profilePicture' => $image,
+                'profilePicture' => $imageUrl,
                 'gender' => $request->gender,
                 'position' => $request->position,
             ];
@@ -253,19 +248,14 @@ class PetugasController extends Controller
             if ($validator->fails()) {
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
-            $image = null;
-            $mimeMap = [
-                "image/png" => "png",
-                "image/jpeg" => "jpg",
-                "image/jpg" => "jpg"
-            ];
+            $imageUrl = null;
 
-            if($request->profilePicture) {
-                $file = Base64FileService::saveBase64File($request->profilePicture, $mimeMap, 'dosen');
-                if(!$file['success']) {
-                    return $this->res->errorResponse('Format file yang anda kirim tidak dapat diproses', ['profilePicture' => 'Format file tidak sesuai'], 422);
-                }
-                $image = $file['filePath'];
+            if ($request->hasFile('profilePicture')) {
+                $file = $request->file('profilePicture');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/profile');
+                $file->move($destinationPath, $fileName);
+                $imageUrl = url("assets/picture/profile/{$fileName}");
             }
 
             $data = [
@@ -290,7 +280,7 @@ class PetugasController extends Controller
             ];
 
             if($request->profilePicture) {
-                $dataDosen['profilePicture'] = $image;
+                $dataDosen['profilePicture'] = $imageUrl;
             }
 
             Admin::find($user->admin->id)->update($dataDosen);
@@ -359,6 +349,9 @@ class PetugasController extends Controller
             "status.string" =>"Status tidak valid.",
             "status.in" =>"Status harus di antara 'Active' atau 'InActive'.",
             "status.required" =>"Status wajib diisi.",
+            "profilePicture.file" =>"Gambar tidak valid.",
+            "profilePicture.required" =>"Gambar wajib diisi.",
+            "profilePicture.mimes" => "Format gambar yang diizinkan adalah png, jpg atau jpeg"
 
         ];
         if($type == 'create') {
@@ -369,6 +362,7 @@ class PetugasController extends Controller
                 'password' => ['required', 'string', 'min:6', 'max:255'],
                 'position' => ['required', 'string', 'min:6', 'max:255'],
                 'status' => ['required', 'string', 'in:Active,InActive'],
+                'profilePicture' => ['required', 'file', 'mimes:png,jpg,jpeg'],
             ], $message);
         } elseif ($type == 'update') {
             $rules = [
@@ -378,6 +372,9 @@ class PetugasController extends Controller
                 'status' => ['required', 'string', 'in:Active,InActive'],
             ];
 
+            if($request->profilePicture) {
+                $rules['profilePicture'] = ['required', 'file', 'mimes:png,jpg,jpeg'];
+            }
             if($request->email !== $user->email) {
                 $rules['email'] = ['required', 'email', 'min:3', 'max:255', 'unique:users,email'];
             }

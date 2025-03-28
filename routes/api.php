@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -124,6 +125,8 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::controller(\App\Http\Controllers\Api\OptionController::class)->prefix('option')->group(function(){
         Route::get('/faculty', 'faculty');
         Route::get('/department', 'prodi');
+        Route::get('/anggota', 'anggota');
+        Route::get('/buku', 'buku');
     });
 
     Route::controller(\App\Http\Controllers\Api\BannerController::class)->prefix('banner')->group(function(){
@@ -136,25 +139,67 @@ Route::middleware('auth:sanctum')->group(function() {
 
     Route::controller(\App\Http\Controllers\Api\NewsController::class)->prefix('news')->group(function(){
         Route::get('/', 'index');
-        Route::get('/{id}', 'show');
+        Route::get('/{slug}', 'show');
         Route::post('/store', 'store');
-        Route::put('/update/{id}', 'update');
-        Route::delete('/{id}', 'destroy');
+        Route::put('/update/{slug}', 'update');
+        Route::delete('/{slug}', 'destroy');
+    });
+
+    Route::controller(\App\Http\Controllers\Api\TransaksiController::class)->prefix('transaksi')->group(function(){
+        Route::get('/', 'index');
+        Route::get('/{slug}', 'show');
+        Route::post('/store', 'store');
+        Route::get('/data/export', 'peminjaman_export');
+        Route::put('/update/{slug}', 'update');
+        Route::delete('/{slug}', 'destroy');
+    });
+
+    Route::controller(\App\Http\Controllers\Api\TransaksiController::class)->prefix('denda')->group(function(){
+        Route::get('/', 'denda_index');
+        Route::get('/{slug}', 'denda_show');
+        Route::put('/update/{slug}', 'denda_update');
     });
 
     Route::controller(\App\Http\Controllers\Api\SettingController::class)->prefix('setting')->group(function(){
         Route::get('/', 'index');
-        Route::put('/profil', 'profil');
-        Route::put('/petunjuk', 'petunjuk');
-        Route::put('/prosedur', 'prosedur');
+        Route::put('/', 'profil');
     });
+});
+
+Route::controller(\App\Http\Controllers\Api\DashboardController::class)->prefix('dashboard')->group(function(){
+    Route::get('/', 'index');
+    Route::get('/transaksi', 'getTransaksiPerTahun');
+    Route::get('/kunjungan', 'getKunjunganPerTahun');
 });
 
 Route::controller(\App\Http\Controllers\Api\LandingPageController::class)->prefix('landing-page')->group(function(){
     Route::get('/banner', 'banner');
     Route::get('/profil', 'profil');
-    Route::get('/petunjuk', 'petunjuk');
-    Route::get('/prosedur', 'prosedur');
     Route::get('/news', 'news');
     Route::get('/news/{slug}', 'news_detail');
+    Route::get('/repository', 'repository');
+    Route::get('/repository/{id}', 'repository_detail');
+    Route::get('/katalog', 'katalog');
+    Route::get('/katalog/{id}', 'katalog_detail');
+});
+
+Route::post('/upload-image', function (Request $request) {
+    if ($request->hasFile('upload')) {
+        $file = $request->file('upload');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $file->move(public_path('assets/image-upload'), $filename);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Gambar berhasil diunggah',
+            'url' => asset("assets/image-upload/{$filename}")
+        ]);
+    }
+
+    return response()->json([
+        'success' => false,
+        'error' => 'No file uploaded',
+    ], 400);
+
+    return Response::json(['error' => 'No file uploaded'], 400);
 });
