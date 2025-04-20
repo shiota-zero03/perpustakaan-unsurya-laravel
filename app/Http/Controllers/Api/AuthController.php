@@ -17,6 +17,7 @@ use App\Resources\Responses\ApiResponse;
 use App\Models\User;
 use App\Models\Teacher;
 use App\Models\Student;
+use App\Models\Admin;
 use App\Helpers\NotificationHelpers;
 
 class AuthController extends Controller
@@ -200,15 +201,94 @@ class AuthController extends Controller
     public function get_profile()
     {
         $user = Auth::user();
-        $data = [
-            'name' => $user->name,
-            'role' => $user->role,
-            'identityNumber' => $user->identityNumber,
-            'email' => $user->email,
-            'status' => $user->status,
-        ];
+        $data = User::where('id', $user->id)->with(['teacher', 'student', 'admin'])->first()->toArray();
 
         return $this->res->successResponse('Berhasil mendapatkan data profil', $data);
+    }
+
+    public function update_profile(Request $request)
+    {
+        $auth = Auth::user();
+        $user = User::find($auth->id);
+
+        try {
+            DB::beginTransaction();
+
+            $validator = $this->__rulesUpdate($request, $user);
+
+            if ($validator->fails()) {
+                return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
+            }
+
+            $imageUrl = null;
+
+            if ($request->hasFile('profilePicture')) {
+                $file = $request->file('profilePicture');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/profile');
+                $file->move($destinationPath, $fileName);
+                $imageUrl = url("assets/picture/profile/{$fileName}");
+            }
+
+            $data = [
+                'email' => $request->email,
+                'name' => $request->name,
+            ];
+
+            if($request->password) {
+                $data['password'] = Hash::make($request->password);
+            }
+            if($request->identityNumber) {
+                $data['identityNumber'] = $request->identityNumber;
+            }
+
+            $user->update($data);
+
+            if($user->role == "Admin") {
+                $dataDosen = [
+                    'gender' => $request->gender,
+                ];
+
+                if($request->profilePicture) {
+                    $dataDosen['profilePicture'] = $imageUrl;
+                }
+
+                Admin::find($user->admin->id)->update($dataDosen);
+            } elseif($user->role == "Teacher") {
+                $dataDosen = [
+                    'gender' => $request->gender,
+                    'phoneNumber' => $request->phoneNumber,
+                ];
+
+                if($request->profilePicture) {
+                    $dataDosen['profilePicture'] = $imageUrl;
+                }
+
+                Teacher::find($user->teacher->id)->update($dataDosen);
+            } elseif($user->role == "Student") {
+                $dataDosen = [
+                    'gender' => $request->gender,
+                    'phoneNumber' => $request->phoneNumber,
+                ];
+
+                if($request->profilePicture) {
+                    $dataDosen['profilePicture'] = $imageUrl;
+                }
+
+                Student::find($user->student->id)->update($dataDosen);
+            }
+
+            $dataToShow = array_merge($data, $dataDosen);
+
+            DB::commit();
+
+            return $this->res->successResponse('Data dosen berhasil diperbarui', $dataToShow, 200);
+
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error("Error saat mengirim data: " . $th->getMessage());
+            return $this->res->errorResponse($th->getMessage(), [], 500);
+        }
     }
 
     public function logout()
@@ -270,5 +350,60 @@ class AuthController extends Controller
                 'confirmation_password' => ['required', 'string', 'min:6', 'max:255', 'same:new_password'],
             ], $message);
         }
+    }
+
+    public function __rulesUpdate(Request $request, $user = null) {
+        $message = [
+            "name.string" =>"Nama tidak valid.",
+            "name.min" =>"Nama minimal harus memiliki 3 karakter.",
+            "name.max" =>"Nama maksimal harus memiliki 255 karakter.",
+            "name.required" =>"Nama wajib diisi.",
+            "gender.string" =>"Jenis kelamin tidak valid.",
+            "gender.in" =>"Jenis kelamin harus di antara Laki - Laki atau Perempuan.",
+            "gender.required" =>"Jenis kelamin wajib diisi.",
+            "email.string" =>"Email tidak valid.",
+            "email.email" =>"Email harus berupa alamat email yang valid.",
+            "email.max" =>"Email maksimal harus memiliki 255 karakter.",
+            "identityNumber.required" =>"Nomor identitas wajib diisi.",
+            "identityNumber.unique" =>"Nomor identitas sudah pernah digunakan.",
+            "email.required" =>"Email wajib diisi.",
+            "email.unique" =>"Email sudah pernah digunakan.",
+            "password.string" =>"Password tidak valid.",
+            "password.min" =>"Password minimal harus memiliki 6 karakter.",
+            "password.max" =>"Password maksimal harus memiliki 255 karakter.",
+            "password.required" =>"Password wajib diisi.",
+            "position.string" =>"Jabatan tidak valid.",
+            "position.min" =>"Jabatan minimal harus memiliki 6 karakter.",
+            "position.max" =>"Jabatan maksimal harus memiliki 255 karakter.",
+            "position.required" =>"Jabatan wajib diisi.",
+            "status.string" =>"Status tidak valid.",
+            "status.in" =>"Status harus di antara 'Active' atau 'InActive'.",
+            "status.required" =>"Status wajib diisi.",
+            "profilePicture.file" =>"Gambar tidak valid.",
+            "profilePicture.required" =>"Gambar wajib diisi.",
+            "profilePicture.mimes" => "Format gambar yang diizinkan adalah png, jpg atau jpeg"
+
+        ];
+
+
+        $rules = [
+            'name' => ['required', 'string', 'min:3', 'max:255'],
+            'gender' => ['required', 'string', 'in:L,P'],
+        ];
+
+        if($request->profilePicture) {
+            $rules['profilePicture'] = ['required', 'file', 'mimes:png,jpg,jpeg'];
+        }
+        if($request->email !== $user->email) {
+            $rules['email'] = ['required', 'email', 'min:3', 'max:255', 'unique:users,email'];
+        }
+        if($request->identityNumber !== $user->identityNumber) {
+            $rules['identityNumber'] = ['required', 'string', 'min:3', 'max:255', 'unique:users,identityNumber'];
+        }
+        if($request->password) {
+            $rules['password'] = ['required', 'string', 'min:6', 'max:255'];
+        }
+
+        return Validator::make($request->all(), $rules, $message);
     }
 }

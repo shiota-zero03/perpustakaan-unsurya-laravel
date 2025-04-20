@@ -13,7 +13,7 @@ class BukuFisikImport implements ToModel, WithHeadingRow
     public function model(array $row)
     {
         $map = [
-            "Kode" => 'kode_klasifikasi',
+            "ISBN" => 'isbn',
             "Judul" => 'judul',
             "Pengarang" => 'penulis',
             "Penerbit" => 'penerbit',
@@ -35,7 +35,7 @@ class BukuFisikImport implements ToModel, WithHeadingRow
 
         $dataMahasiswa = [
             'book_id' => $user->id,
-            'kode_klasifikasi' => $formattedRow['kode_klasifikasi'],
+            'isbn' => $formattedRow['isbn'],
             'judul' => $formattedRow['judul'],
             'penulis' => $formattedRow['penulis'],
             'penerbit' => $formattedRow['penerbit'],

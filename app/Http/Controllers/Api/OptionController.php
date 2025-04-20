@@ -49,20 +49,24 @@ class OptionController extends Controller
         foreach ($buku as $key => $value) {
 
             $judul = "";
+            $isbn = "";
             $penulis = "";
             $type = "";
             if(isset($value->buku)) {
                 $judul = $value->buku->judul;
                 $penulis = $value->buku->penulis;
+                $isbn = $value->buku->isbn;
                 $type = 'Buku';
             } elseif(isset($value->karya)) {
                 $judul = $value->karya->judul;
+                $isbn = null;
                 $penulis = $value->karya->penulis;
                 $type = $value->karya->jenis;
             }
 
             $data[] = [
                 'id' => $value->id,
+                'isbn' => $isbn,
                 'type' => $type,
                 'book_id' => $value->book_id,
                 'judul' => $judul,

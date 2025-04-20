@@ -336,13 +336,12 @@ class BukuFisikController extends Controller
         $items = $users->map(function ($user, $index) {
             return [
                 "No" => $index + 1,
-                "No. Urut" => $user->buku->no_urut,
+                "ISBN" => $user->buku->isbn,
                 "Kode Klasifikasi" => $user->buku->kode_klasifikasi,
                 "Judul Buku" => $user->buku->judul,
                 "Penulis" => $user->buku->penulis,
                 "Penerbit" => $user->buku->penerbit,
                 "Tahun Terbit" => $user->buku->tahun_terbit,
-                "ISBN" => $user->buku->isbn,
                 "Tanggal Masuk" => $user->buku->tanggal_masuk ? date('d/m/Y', strtotime($user->buku->tanggal_masuk)) : "",
                 "Kode Rak" => $user->buku->kode_rak,
                 "Jumlah" => $user->buku->stok,

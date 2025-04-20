@@ -19,15 +19,15 @@ class BukuFisikSampleExport implements FromCollection, WithHeadings, ShouldAutoS
     public function collection()
     {
         return new Collection([
-            ["No" => 1, "Kode" => "330.13 GRA d 1 TI", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 1", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100],
-            ["No" => 2, "Kode" => "330.13 GRA d 1 TE", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 2", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100],
-            ["No" => 3, "Kode" => "330.13 GRA d 1 KOM", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 3", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100],
+            ["No" => 1, "ISBN" => "330.13 GRA d 1 TI", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 1", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100],
+            ["No" => 2, "ISBN" => "330.13 GRA d 1 TE", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 2", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100],
+            ["No" => 3, "ISBN" => "330.13 GRA d 1 KOM", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 3", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100],
         ]);
     }
 
     public function headings(): array
     {
-        return ["No", "Kode", "Judul", "Pengarang", "Penerbit", "Tahun", "Jumlah"];
+        return ["No", "ISBN", "Judul", "Pengarang", "Penerbit", "Tahun", "Jumlah"];
     }
 
     public function styles(Worksheet $sheet)

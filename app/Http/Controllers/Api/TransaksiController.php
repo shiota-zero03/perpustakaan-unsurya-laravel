@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\MasterBuku;
+use App\Models\Buku;
 use App\Models\Denda;
 
 use App\Resources\Responses\ApiResponse;
@@ -34,6 +35,7 @@ class TransaksiController extends Controller
         $limit = $request->input('limit', 10); // Default 10 data per halaman
         $page = $request->input('page', 1); // Default halaman pertama
         $name = $request->input('name');
+        $identityNumber = $request->input('identityNumber');
         $title = $request->input('title');
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
@@ -43,6 +45,10 @@ class TransaksiController extends Controller
 
         if (!empty($name)) {
             $query->where('nama_anggota', 'like', "%{$name}%");
+        }
+
+        if (!empty($identityNumber)) {
+            $query->where('id_anggota', 'like', "%{$identityNumber}%");
         }
 
         if (!empty($title)) {
@@ -205,6 +211,10 @@ class TransaksiController extends Controller
                 'keterangan_peminjaman' => $request->keterangan_peminjaman,
             ];
 
+            if($checkBuku->type === "Buku Fisik") {
+                $stok = Buku::where('book_id', $checkBuku->id)->first();
+                $stok->update(['stok' => $stok->stok - 1, 'dipinjam' => $stok->dipinjam + 1]);
+            }
             Transaction::create($data);
 
             DB::commit();
@@ -349,6 +359,12 @@ class TransaksiController extends Controller
                     ['transactionId'],
                     $denda
                 );
+            }
+
+            $checkBuku = MasterBuku::find($transaction->bukuId);
+            if($checkBuku->type === "Buku Fisik") {
+                $stok = Buku::where('book_id', $checkBuku->id)->first();
+                $stok->update(['stok' => $stok->stok + 1, 'dipinjam' => $stok->dipinjam - 1]);
             }
 
 

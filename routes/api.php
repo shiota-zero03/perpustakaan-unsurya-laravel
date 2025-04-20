@@ -33,6 +33,7 @@ Route::controller(\App\Http\Controllers\Api\PublicController::class)->group(func
 
 Route::middleware('auth:sanctum')->group(function() {
     Route::get('/profile', [\App\Http\Controllers\Api\AuthController::class, 'get_profile']);
+    Route::put('/profile', [\App\Http\Controllers\Api\AuthController::class, 'update_profile']);
     Route::post('/auth/sign-out', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
 
     Route::controller(\App\Http\Controllers\Api\DosenController::class)->prefix('dosen')->group(function(){
