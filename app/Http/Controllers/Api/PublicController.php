@@ -69,7 +69,7 @@ class PublicController extends Controller
             $create = Visitor::firstOrCreate($data);
             DB::commit();
 
-            return $this->res->successResponse('Data pengunjung berhasil ditambahkan', $create, 201);
+            return $this->res->successResponse('Data pengunjung berhasil ditambahkan', $create->toArray(), 201);
 
         } catch (\Throwable $th) {
             DB::rollBack();
