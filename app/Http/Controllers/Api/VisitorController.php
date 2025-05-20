@@ -23,7 +23,8 @@ class VisitorController extends Controller
         $limit = $request->input('limit', 10); // Default 10 data per halaman
         $page = $request->input('page', 1); // Default halaman pertama
         $name = $request->input('name');
-        $date = $request->input('date');
+        $startDate = $request->input('date');
+        $endDate = $request->input('end');
         $identityNumber = $request->input('identityNumber');
 
         $query = Visitor::with('user')->orderByDesc('id');
@@ -32,8 +33,16 @@ class VisitorController extends Controller
             $query->where('name', 'like', "%{$name}%");
         }
 
-        if (!empty($date)) {
-            $query->where('date', $date);
+        if (!empty($startDate) && !empty($endDate)) {
+            if ($startDate == $endDate || $startDate > $endDate) {
+                $query->whereDate('date', $startDate);
+            } else {
+                $query->whereBetween('date', [$startDate, $endDate]);
+            }
+        } elseif (!empty($startDate)) {
+            $query->whereDate('date', $startDate);
+        } elseif (!empty($endDate)) {
+            $query->whereDate('date', $endDate);
         }
 
         if (!empty($identityNumber)) {
@@ -47,7 +56,7 @@ class VisitorController extends Controller
         $items = $users->map(function ($user) {
             return [
                 "id" => $user->id,
-                "member" => $user->user->identityNumber,
+                "member" => $user->userId ? $user->user->identityNumber : $user->email,
                 "name" => $user->name,
                 "activity" => $user->activity,
                 "time" => $user->date

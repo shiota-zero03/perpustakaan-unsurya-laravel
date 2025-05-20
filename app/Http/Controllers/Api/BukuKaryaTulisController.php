@@ -40,6 +40,7 @@ class BukuKaryaTulisController extends Controller
         $judul = $request->input('judul');
         $penulis = $request->input('penulis');
         $tahun = $request->input('tahun');
+        $prodi = $request->input('prodi');
 
         $query = MasterBuku::with('karya')->orderByDesc('id')->where('type', 'Karya Tulis');
 
@@ -63,6 +64,13 @@ class BukuKaryaTulisController extends Controller
                 $q->where('tahun_terbit', 'like', "%{$tahun}%");
             });
         }
+        if (!empty($prodi)) {
+            $query->whereHas('karya', function ($q) use ($prodi) {
+                $q->whereHas('prodi', function ($p) use ($prodi) {
+                    $p->where('name', 'like', "%{$prodi}%");
+                });
+            });
+        }
 
         $users = $query->paginate($limit, ['*'], 'page', $page);
 
@@ -70,6 +78,7 @@ class BukuKaryaTulisController extends Controller
             return [
                 'id' => $user->book_id,
                 'penulis' => $user->karya->penulis,
+                'program_studi' => $user->karya->prodi ? $user->karya->prodi->name : null,
                 'nim' => $user->karya->nim,
                 'cover' =>  $user->karya->cover,
                 'judul' => $user->karya->judul,

@@ -29,12 +29,11 @@ class PublicController extends Controller
         try {
             DB::beginTransaction();
             $validator = Validator::make($request->all(), [
-                'member' => ['required', 'string', 'exists:users,identityNumber'],
+                'type' => ['required', 'string'],
                 'activity' => ['required', 'string', 'max:255']
             ],[
-                'member.required' => 'NIM/NIDN tidak boleh kosong',
-                'member.string' => 'NIM/NIDN tidak valid',
-                'member.exists' => 'NIM/NIDN tidak terdaftar di database',
+                'type.required' => 'Tipe pengunjung tidak boleh kosong',
+                'type.string' => 'Tipe pengunjung tidak valid',
                 'activity.required' => 'Kegiatan tidak boleh kosong',
                 'activity.string' => 'Kegiatan tidak valid',
                 'activity.max' => 'Kegiatan maksimal 255 karakter'
@@ -47,24 +46,47 @@ class PublicController extends Controller
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
 
-            $checkMember = User::where('identityNumber', $request->member)->first();
-            if(!$checkMember) {
-                return $this->res->errorResponse('Pengguna tidak ditemukan', [], 404);
+            if($request->type === "Akademisi") {
+                if(!$request->member) {
+                    return $this->res->errorResponse('Masukkan NIM/NIDN terlebih dahulu', [], 422);
+                }
+                $checkMember = User::where('identityNumber', $request->member)->first();
+                if(!$checkMember) {
+                    return $this->res->errorResponse('Pengguna tidak ditemukan', [], 404);
+                }
+                $visitorCheck = Visitor::where('userId', $checkMember->id)->where('date', $date)->first();
+
+                if($visitorCheck) {
+                    return $this->res->errorResponse('Anda sudah berkunjung hari ini', [], 400);
+                }
+                $data = [
+                    'userId' => $checkMember->id,
+                    'name' => $checkMember->name,
+                    'activity' => $request->activity,
+                    'date' => $date,
+                    'time' => $time,
+                ];
+            } else {
+                if(!$request->name) {
+                    return $this->res->errorResponse('Masukkan Nama terlebih dahulu', [], 422);
+                }
+                if(!$request->email) {
+                    return $this->res->errorResponse('Masukkan Email terlebih dahulu', [], 422);
+                }
+
+                $visitorCheck = Visitor::where('email', $request->email)->where('date', $date)->first();
+
+                if($visitorCheck) {
+                    return $this->res->errorResponse('Anda sudah berkunjung hari ini', [], 400);
+                }
+                $data = [
+                    'email' => $request->email,
+                    'name' => $request->name,
+                    'activity' => $request->activity,
+                    'date' => $date,
+                    'time' => $time,
+                ];
             }
-
-            $visitorCheck = Visitor::where('userId', $checkMember->id)->where('date', $date)->first();
-
-            if($visitorCheck) {
-                return $this->res->errorResponse('Anda sudah berkunjung hari ini', [], 400);
-            }
-
-            $data = [
-                'userId' => $checkMember->id,
-                'name' => $checkMember->name,
-                'activity' => $request->activity,
-                'date' => $date,
-                'time' => $time,
-            ];
 
             $create = Visitor::firstOrCreate($data);
             DB::commit();

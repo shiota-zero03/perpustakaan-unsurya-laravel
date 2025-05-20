@@ -16,6 +16,7 @@ class Visitor extends Model
         'activity',
         'date',
         'time',
+        'email'
     ];
     public function user()
     {
