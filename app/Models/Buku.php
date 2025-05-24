@@ -12,6 +12,8 @@ class Buku extends Model
     protected $primaryKey = 'id';
     protected $fillable = [
         'book_id',
+        'studyProgramId',
+        'book_description',
         'no_urut',
         'cover',
         'kode_klasifikasi',
@@ -31,5 +33,9 @@ class Buku extends Model
     public function master()
     {
         return $this->belongsTo(MasterBuku::class, 'book_id');
+    }
+    public function prodi()
+    {
+        return $this->belongsTo(StudyProgram::class, 'studyProgramId');
     }
 }

@@ -31,6 +31,8 @@ class OptionController extends Controller
         $data = [];
         if($request->facultyId) {
             $data = StudyProgram::where('fakultas_id', $request->facultyId)->orderByDesc('id')->select('id', 'name')->get()->toArray();
+        } else {
+            $data = StudyProgram::orderByDesc('id')->select('id', 'name')->get()->toArray();
         }
 
         return $this->res->successResponse('Data program studi berhasil didapatkan', $data, 200);

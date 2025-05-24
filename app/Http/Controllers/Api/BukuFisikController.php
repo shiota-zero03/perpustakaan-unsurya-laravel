@@ -37,6 +37,7 @@ class BukuFisikController extends Controller
         $judul = $request->input('judul');
         $penulis = $request->input('penulis');
         $tahun = $request->input('tahun');
+        $prodi = $request->input('prodi');
 
         $query = MasterBuku::with('buku')->orderByDesc('id')->where('type', 'Buku Fisik');
 
@@ -55,6 +56,13 @@ class BukuFisikController extends Controller
                 $q->where('tahun_terbit', 'like', "%{$tahun}%");
             });
         }
+        if (!empty($prodi)) {
+            $query->whereHas('buku', function ($q) use ($prodi) {
+                $q->whereHas('prodi', function ($p) use ($prodi) {
+                    $p->where('name', 'like', "%{$prodi}%");
+                });
+            });
+        }
 
         $users = $query->paginate($limit, ['*'], 'page', $page);
 
@@ -66,6 +74,7 @@ class BukuFisikController extends Controller
                 'penulis' => $user->buku->penulis,
                 'stok' => $user->buku->stok,
                 'tahun_terbit' => $user->buku->tahun_terbit,
+                'prodi' => $user->buku->prodi->name ?? "",
             ];
         });
 
@@ -126,6 +135,8 @@ class BukuFisikController extends Controller
             $dataMahasiswa = [
                 'book_id' => $user->id,
                 'cover' => $imageUrl,
+                'book_description' => $request->book_description,
+                'studyProgramId' => $request->studyProgramId,
                 'no_urut' => $request->no_urut,
                 'kode_klasifikasi' => $request->kode_klasifikasi,
                 'judul' => $request->judul,
@@ -172,6 +183,7 @@ class BukuFisikController extends Controller
                 'id' => $user->book_id,
                 'no_urut' => $user->buku->no_urut,
                 'cover' => $user->buku->cover,
+                'book_description' => $user->buku->book_description,
                 'kode_klasifikasi' => $user->buku->kode_klasifikasi,
                 'judul' => $user->buku->judul,
                 'penulis' => $user->buku->penulis,
@@ -182,6 +194,11 @@ class BukuFisikController extends Controller
                 'kode_rak' => $user->buku->kode_rak,
                 'stok' => $user->buku->stok,
                 'denda_harian' => $user->buku->denda_harian,
+                'book_description' => $user->buku->book_description,
+                'prodi' => [
+                    'id' => $user->buku->prodi->id ?? '',
+                    'name' => $user->buku->prodi->name ?? ''
+                ]
             ];
 
             DB::commit();
@@ -278,6 +295,8 @@ class BukuFisikController extends Controller
                 'kode_rak' => $request->kode_rak,
                 'stok' => $request->stok,
                 'denda_harian' => $request->denda_harian,
+                'book_description' => $request->book_description,
+                'studyProgramId' => $request->studyProgramId,
             ];
 
             if($request->cover) {
@@ -342,10 +361,11 @@ class BukuFisikController extends Controller
                 "Penulis" => $user->buku->penulis,
                 "Penerbit" => $user->buku->penerbit,
                 "Tahun Terbit" => $user->buku->tahun_terbit,
+                "Program Studi" => $user->buku->prodi->name ?? "-",
                 "Tanggal Masuk" => $user->buku->tanggal_masuk ? date('d/m/Y', strtotime($user->buku->tanggal_masuk)) : "",
                 "Kode Rak" => $user->buku->kode_rak,
                 "Jumlah" => $user->buku->stok,
-                "Denda Harian" => $user->buku->denda_harian
+                "Denda Harian" => $user->buku->denda_harian,
             ];
         });
         return Excel::download(new BukuFisikExport($items), 'data_export.xlsx');

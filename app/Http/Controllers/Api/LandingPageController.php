@@ -232,6 +232,7 @@ class LandingPageController extends Controller
         $judul = $request->input('judul');
         $penulis = $request->input('penulis');
         $tahun = $request->input('tahun');
+        $prodi = $request->input('prodi');
 
         $query = MasterBuku::with('buku')->orderByDesc('id')->whereIn('type', ['Buku Digital', 'Buku Fisik']);
 
@@ -248,6 +249,13 @@ class LandingPageController extends Controller
         if (!empty($tahun)) {
             $query->whereHas('buku', function ($q) use ($tahun) {
                 $q->where('tahun_terbit', 'like', "%{$tahun}%");
+            });
+        }
+        if (!empty($prodi)) {
+            $query->whereHas('buku', function ($q) use ($prodi) {
+                $q->whereHas('prodi', function ($p) use ($prodi) {
+                    $p->where('name', 'like', "%{$prodi}%");
+                });
             });
         }
 
@@ -306,6 +314,11 @@ class LandingPageController extends Controller
                 'stok' => $user->buku->stok,
                 'denda_harian' => $user->buku->denda_harian,
                 'link_book' => $user->buku->link_book,
+                'book_description' => $user->buku->book_description,
+                'prodi' => [
+                    'id' => $user->buku->prodi->id ?? '',
+                    'name' => $user->buku->prodi->name ?? ''
+                ]
             ];
 
 
