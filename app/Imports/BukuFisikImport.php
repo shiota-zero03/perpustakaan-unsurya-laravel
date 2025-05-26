@@ -30,12 +30,15 @@ class BukuFisikImport implements ToModel, WithHeadingRow
             $formattedRow[$newKey] = $row[$lowerOldKey] ?? null;
         }
 
+        if (empty($formattedRow['isbn']) || empty($formattedRow['judul'])) {
+            return null;
+        }
+
         $user = MasterBuku::create([
             'book_id' => Str::uuid(),
             'type' => "Buku Fisik",
         ]);
 
-        $checkProdi = StudyProgram::where('name', $formattedRow['program_studi'])->first();
         $dataMahasiswa = [
             'book_id' => $user->id,
             'isbn' => $formattedRow['isbn'],
@@ -45,6 +48,7 @@ class BukuFisikImport implements ToModel, WithHeadingRow
             'tahun_terbit' => $formattedRow['tahun_terbit'],
             'stok' => $formattedRow['stok'],
         ];
+        $checkProdi = StudyProgram::where('name', $formattedRow['program_studi'])->first();
         if($checkProdi) {
             $dataStudent['studyProgramId'] = $checkProdi['id'];
         }
