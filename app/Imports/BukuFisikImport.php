@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\MasterBuku;
 use App\Models\Buku;
+use App\Models\StudyProgram;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Str;
@@ -19,6 +20,7 @@ class BukuFisikImport implements ToModel, WithHeadingRow
             "Penerbit" => 'penerbit',
             "Tahun" => 'tahun_terbit',
             "Jumlah" => 'stok',
+            'ProgramStudi' => 'program_studi',
         ];
 
         $row = array_change_key_case($row, CASE_LOWER);
@@ -33,6 +35,7 @@ class BukuFisikImport implements ToModel, WithHeadingRow
             'type' => "Buku Fisik",
         ]);
 
+        $checkProdi = StudyProgram::where('name', $formattedRow['program_studi'])->first();
         $dataMahasiswa = [
             'book_id' => $user->id,
             'isbn' => $formattedRow['isbn'],
@@ -42,6 +45,9 @@ class BukuFisikImport implements ToModel, WithHeadingRow
             'tahun_terbit' => $formattedRow['tahun_terbit'],
             'stok' => $formattedRow['stok'],
         ];
+        if($checkProdi) {
+            $dataStudent['studyProgramId'] = $checkProdi['id'];
+        }
 
         return new Buku($dataMahasiswa);
     }
