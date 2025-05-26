@@ -382,6 +382,7 @@ class BukuFisikController extends Controller
 
     public function buku_fisik_import(Request $request)
     {
+        set_time_limit(120);
         $request->validate([
             'dataImport' => 'required|string',
         ]);

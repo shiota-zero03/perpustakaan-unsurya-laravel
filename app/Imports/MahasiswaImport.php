@@ -57,11 +57,14 @@ class MahasiswaImport implements ToModel, WithHeadingRow
             'status' => 'Active'
         ]);
 
+        $date = date('Y-m-d', strtotime('+1 year'));
+
         // Buat student baru
         $dataStudent = [
             'userId' => $user->id,
             'gender' => $formattedRow['jenis_kelamin'] ?? null,
             'phoneNumber' => $formattedRow['no_hp'] ?? '',
+            'validUntil' => $date,
         ];
         $checkProdi = StudyProgram::where('name', $formattedRow['program_studi'])->first();
         if($checkProdi) {

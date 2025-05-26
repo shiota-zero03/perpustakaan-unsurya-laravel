@@ -333,6 +333,7 @@ class BukuDigitalController extends Controller
 
     public function buku_digital_import(Request $request)
     {
+        set_time_limit(120);
         $request->validate([
             'dataImport' => 'required|string',
         ]);
