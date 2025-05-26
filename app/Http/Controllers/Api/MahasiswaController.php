@@ -388,6 +388,7 @@ class MahasiswaController extends Controller
 
     public function mahasiswa_import(Request $request)
     {
+        set_time_limit(120);
         $request->validate([
             'dataImport' => 'required|string',
         ]);
