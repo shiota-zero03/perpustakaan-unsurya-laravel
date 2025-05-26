@@ -48,6 +48,7 @@ class BukuFisikImport implements ToModel, WithHeadingRow
             'tahun_terbit' => $formattedRow['tahun_terbit'],
             'stok' => $formattedRow['stok'],
         ];
+        \Log::info($formattedRow);
         $checkProdi = StudyProgram::where('name', $formattedRow['program_studi'])->first();
         if($checkProdi) {
             $dataStudent['studyProgramId'] = $checkProdi['id'];
