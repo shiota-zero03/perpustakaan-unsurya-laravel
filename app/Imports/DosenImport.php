@@ -22,6 +22,7 @@ class DosenImport implements ToModel, WithHeadingRow
 
         $row = array_change_key_case($row, CASE_LOWER);
 
+
         $formattedRow = [];
         foreach ($map as $oldKey => $newKey) {
             $lowerOldKey = strtolower($oldKey);
@@ -56,11 +57,13 @@ class DosenImport implements ToModel, WithHeadingRow
             'status' => 'Active'
         ]);
 
+        $date = date('Y-m-d', strtotime('+1 year'));
         // Buat teacher baru
         return new Teacher([
             'userId' => $user->id,
             'gender' => $formattedRow['jenis_kelamin'] ?? null,
             'phoneNumber' => $formattedRow['no_hp'] ?? '',
+            'validUntil' => $date,
         ]);
     }
 }
