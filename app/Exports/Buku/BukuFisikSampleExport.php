@@ -10,59 +10,20 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
-
-class BukuFisikSampleExport implements FromCollection, WithHeadings, ShouldAutoSize, WithStyles, WithEvents
+class BukuFisikSampleExport implements WithMultipleSheets
 {
-    /**
-    * @return \Illuminate\Support\Collection
-    */
-    public function collection()
+    protected $prodiData;
+
+    public function __construct($prodiData)
     {
-        return new Collection([
-            ["No" => 1, "ISBN" => "330.13 GRA d 1 TI", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 1", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100],
-            ["No" => 2, "ISBN" => "330.13 GRA d 1 TE", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 2", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100],
-            ["No" => 3, "ISBN" => "330.13 GRA d 1 KOM", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 3", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100],
-        ]);
+        $this->prodiData = $prodiData;
     }
 
-    public function headings(): array
-    {
-        return ["No", "ISBN", "Judul", "Pengarang", "Penerbit", "Tahun", "Jumlah"];
-    }
-
-    public function styles(Worksheet $sheet)
+    public function sheets(): array
     {
         return [
-            1 => [
-                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '085C94']],
-                'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
-            ],
-        ];
-    }
-
-    public function registerEvents(): array
-    {
-        return [
-            AfterSheet::class => function(AfterSheet $event) {
-                $sheet = $event->sheet;
-                $highestRow = $sheet->getHighestRow();
-                $highestColumn = $sheet->getHighestColumn();
-                $cellRange = "A1:{$highestColumn}{$highestRow}";
-
-                // Tambahkan border ke semua sel
-                $sheet->getStyle($cellRange)->applyFromArray([
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                            'color' => ['rgb' => '000000'],
-                        ],
-                    ],
-                ]);
-
-                // Freeze header (baris pertama)
-                $sheet->freezePane('A2');
-            },
+            'Data Buku Fisik' => new BukuFisikSamExport(),
+            'Data Program Studi' => new ProgramStudiSheetExport($this->prodiData),
         ];
     }
 }

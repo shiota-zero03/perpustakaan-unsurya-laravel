@@ -18,6 +18,7 @@ use App\Resources\Responses\ApiResponse;
 use App\Services\Base64FileService;
 
 use App\Models\MasterBuku;
+use App\Models\StudyProgram;
 use App\Models\Buku;
 
 class BukuFisikController extends Controller
@@ -346,7 +347,15 @@ class BukuFisikController extends Controller
 
     public function sample_export()
     {
-        return Excel::download(new BukuFisikSampleExport(), 'sample_data_buku_fisik.xlsx');
+        $programStudy = StudyProgram::all()->toArray();
+        $data = [];
+        foreach($programStudy as $index => $value) {
+            $data[] = [
+                'No' => $index + 1,
+                'Nama Program Studi' => $value['name']
+            ];
+        }
+        return Excel::download(new BukuFisikSampleExport($data), 'sample_data_buku_fisik.xlsx');
     }
 
     public function buku_fisik_export()
