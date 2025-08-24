@@ -290,7 +290,7 @@ class BukuDigitalController extends Controller
                 'penerbit' => $request->penerbit,
                 'tahun_terbit' => $request->tahun_terbit,
                 'isbn' => $request->isbn,
-                'link_book' => $request->link_book,
+                'link_book' => $linkBookUrl,
             ];
 
             if($request->cover) {
