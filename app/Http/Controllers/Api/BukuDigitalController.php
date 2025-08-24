@@ -440,12 +440,11 @@ class BukuDigitalController extends Controller
                 "penerbit" => ['required', 'string', 'max:255'],
                 "tahun_terbit" => ['required', 'numeric'],
                 "isbn" => ['required', 'string', 'max:255'],
-                "link_book" => ['required', 'string', 'max:255'],
                 'cover' => ['required', 'file', 'mimes:png,jpg,jpeg'],
             ];
 
             if ($request->hasFile('link_book')) {
-                $rules['link_book'] = ['required', 'file', 'mimes:png,jpg,jpeg', 'max:2048']; // max 2MB
+                $rules['link_book'] = ['required', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048']; // max 2MB
             } else {
                 $rules['link_book'] = ['required'];
             }
@@ -465,7 +464,7 @@ class BukuDigitalController extends Controller
                 $rules['cover'] = ['required', 'file', 'mimes:png,jpg,jpeg'];
             }
             if ($request->hasFile('link_book')) {
-                $rules['link_book'] = ['required', 'file', 'mimes:png,jpg,jpeg', 'max:2048']; // max 2MB
+                $rules['link_book'] = ['required', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048']; // max 2MB
             } else if ($request->filled('link_book')) {
                 $rules['link_book'] = ['required'];
             }
