@@ -289,15 +289,14 @@ class BukuDigitalController extends Controller
                 'penulis' => $request->penulis,
                 'penerbit' => $request->penerbit,
                 'tahun_terbit' => $request->tahun_terbit,
-                'isbn' => $request->isbn,
-                'link_book' => $linkBookUrl,
+                'isbn' => $request->isbn
             ];
 
             if($request->cover) {
-                $dataMahasiswa['cover'] = $linkBookUrl;
+                $dataMahasiswa['cover'] = $imageUrl;
             }
             if($request->link_book) {
-                $dataMahasiswa['link_book'] = $imageUrl;
+                $dataMahasiswa['link_book'] = $linkBookUrl;
             }
 
             Buku::find($user->buku->id)->update($dataMahasiswa);
