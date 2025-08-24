@@ -115,6 +115,19 @@ class BukuDigitalController extends Controller
                 $imageUrl = url("assets/picture/buku/{$fileName}");
             }
 
+            $linkBookUrl = null;
+
+            if ($request->hasFile('link_book')) {
+                $file = $request->file('link_book');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('assets/picture/buku');
+                $file->move($destinationPath, $fileName);
+
+                $linkBookUrl = url("assets/picture/buku/{$fileName}");
+            } else {
+                $linkBookUrl = $request->input('link_book');
+            }
+
             $data = [
                 'book_id' => Str::uuid(),
                 'type' => "Buku Digital",
@@ -130,7 +143,7 @@ class BukuDigitalController extends Controller
                 'penerbit' => $request->penerbit,
                 'tahun_terbit' => $request->tahun_terbit,
                 'isbn' => $request->isbn,
-                'link_book' => $request->link_book,
+                'link_book' => $linkBookUrl,
             ];
 
             Buku::create($dataMahasiswa);
@@ -254,6 +267,22 @@ class BukuDigitalController extends Controller
                 $imageUrl = url("assets/picture/buku/{$fileName}");
             }
 
+            $linkBookUrl = null;
+
+            if($request->link_book) {
+                if ($request->hasFile('link_book')) {
+                    $file = $request->file('link_book');
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $destinationPath = public_path('assets/picture/buku');
+                    $file->move($destinationPath, $fileName);
+
+                    $linkBookUrl = url("assets/picture/buku/{$fileName}");
+                } else {
+                    $linkBookUrl = $request->input('link_book');
+                }
+            }
+
+
 
             $dataMahasiswa = [
                 'judul' => $request->judul,
@@ -265,7 +294,10 @@ class BukuDigitalController extends Controller
             ];
 
             if($request->cover) {
-                $dataMahasiswa['cover'] = $imageUrl;
+                $dataMahasiswa['cover'] = $linkBookUrl;
+            }
+            if($request->link_book) {
+                $dataMahasiswa['link_book'] = $imageUrl;
             }
 
             Buku::find($user->buku->id)->update($dataMahasiswa);
@@ -402,16 +434,6 @@ class BukuDigitalController extends Controller
 
         ];
         if($type == 'create') {
-            return Validator::make($request->all(), [
-                "judul" => ['required', 'string', 'max:255'],
-                "penulis" => ['required', 'string', 'max:255'],
-                "penerbit" => ['required', 'string', 'max:255'],
-                "tahun_terbit" => ['required', 'numeric'],
-                "isbn" => ['required', 'string', 'max:255'],
-                "link_book" => ['required', 'string', 'max:255'],
-                'cover' => ['required', 'file', 'mimes:png,jpg,jpeg'],
-            ], $message);
-        } elseif ($type == 'update') {
             $rules = [
                 "judul" => ['required', 'string', 'max:255'],
                 "penulis" => ['required', 'string', 'max:255'],
@@ -419,10 +441,33 @@ class BukuDigitalController extends Controller
                 "tahun_terbit" => ['required', 'numeric'],
                 "isbn" => ['required', 'string', 'max:255'],
                 "link_book" => ['required', 'string', 'max:255'],
+                'cover' => ['required', 'file', 'mimes:png,jpg,jpeg'],
+            ];
+
+            if ($request->hasFile('link_book')) {
+                $rules['link_book'] = ['required', 'file', 'mimes:png,jpg,jpeg', 'max:2048']; // max 2MB
+            } else {
+                $rules['link_book'] = ['required'];
+            }
+
+            return Validator::make($request->all(), $rules, $message);
+
+        } elseif ($type == 'update') {
+            $rules = [
+                "judul" => ['required', 'string', 'max:255'],
+                "penulis" => ['required', 'string', 'max:255'],
+                "penerbit" => ['required', 'string', 'max:255'],
+                "tahun_terbit" => ['required', 'numeric'],
+                "isbn" => ['required', 'string', 'max:255']
             ];
 
             if($request->cover) {
                 $rules['cover'] = ['required', 'file', 'mimes:png,jpg,jpeg'];
+            }
+            if ($request->hasFile('link_book')) {
+                $rules['link_book'] = ['required', 'file', 'mimes:png,jpg,jpeg', 'max:2048']; // max 2MB
+            } else if ($request->filled('link_book')) {
+                $rules['link_book'] = ['required'];
             }
 
             return Validator::make($request->all(), $rules, $message);
