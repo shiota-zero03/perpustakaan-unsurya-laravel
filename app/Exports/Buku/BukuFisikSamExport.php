@@ -19,15 +19,15 @@ class BukuFisikSamExport implements FromCollection, WithHeadings, ShouldAutoSize
     public function collection()
     {
         return new Collection([
-            ["No" => 1, "ISBN" => "330.13 GRA d 1 TI", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 1", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100, "ProgramStudi" => "Sistem Informasi", "DeskripsiFisik" => "vi+266 hlm; 16x23 cm1", "Lokasi" => "Unsurya", "Bahasa" => "Indonesia", "Edisi" => "1"],
-            ["No" => 2, "ISBN" => "330.13 GRA d 1 TE", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 2", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100, "ProgramStudi" => "Sistem Informasi", "DeskripsiFisik" => "vi+266 hlm; 16x23 cm1", "Lokasi" => "Unsurya", "Bahasa" => "Indonesia", "Edisi" => "1"],
-            ["No" => 3, "ISBN" => "330.13 GRA d 1 KOM", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 3", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100, "ProgramStudi" => "Sistem Informasi", "DeskripsiFisik" => "vi+266 hlm; 16x23 cm1", "Lokasi" => "Unsurya", "Bahasa" => "Indonesia", "Edisi" => "1"],
+            ["No" => 1, "ISBN" => "330.13 GRA d 1 TI", "KodeKlasifikasi" => "330.13 GRA d 1 TI", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 1", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100, "ProgramStudi" => "Sistem Informasi", "DeskripsiFisik" => "vi+266 hlm; 16x23 cm1", "Lokasi" => "Unsurya", "Bahasa" => "Indonesia", "Edisi" => "1"],
+            ["No" => 2, "ISBN" => "330.13 GRA d 1 TE", "KodeKlasifikasi" => "330.13 GRA d 1 TI", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 2", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100, "ProgramStudi" => "Sistem Informasi", "DeskripsiFisik" => "vi+266 hlm; 16x23 cm1", "Lokasi" => "Unsurya", "Bahasa" => "Indonesia", "Edisi" => "1"],
+            ["No" => 3, "ISBN" => "330.13 GRA d 1 KOM", "KodeKlasifikasi" => "330.13 GRA d 1 TI", "Judul" => "Dasar-dasar Ekonomi Teknik Jilid 3", "Pengarang" => "Eugene L.Grant", "Penerbit" => "Gramedia Pustaka", "Tahun" => 2024, "Jumlah" => 100, "ProgramStudi" => "Sistem Informasi", "DeskripsiFisik" => "vi+266 hlm; 16x23 cm1", "Lokasi" => "Unsurya", "Bahasa" => "Indonesia", "Edisi" => "1"],
         ]);
     }
 
     public function headings(): array
     {
-        return ["No", "ISBN", "Judul", "Pengarang", "Penerbit", "Tahun", "Jumlah", "ProgramStudi", "DeskripsiFisik", "Lokasi", "Bahasa", "Edisi"];
+        return ["No", "ISBN", "KodeKlasifikasi", "Judul", "Pengarang", "Penerbit", "Tahun", "Jumlah", "ProgramStudi", "DeskripsiFisik", "Lokasi", "Bahasa", "Edisi"];
     }
 
     public function styles(Worksheet $sheet)

@@ -25,6 +25,7 @@ class BukuFisikImport implements ToModel, WithHeadingRow
             'Lokasi' => 'locations',
             'Bahasa' => 'language',
             'Edisi' => 'edition',
+            'KodeKlasifikasi' => 'kode_klasifikasi',
         ];
 
         $row = array_change_key_case($row, CASE_LOWER);
@@ -55,6 +56,7 @@ class BukuFisikImport implements ToModel, WithHeadingRow
             'locations' => $formattedRow['locations'],
             'language' => $formattedRow['language'],
             'edition' => $formattedRow['edition'],
+            'kode_klasifikasi' => $formattedRow['kode_klasifikasi'],
         ];
         $checkProdi = StudyProgram::where('name', $formattedRow['program_studi'])->first();
         if($checkProdi) {
