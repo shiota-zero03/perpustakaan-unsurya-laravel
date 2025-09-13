@@ -387,6 +387,10 @@ class BukuFisikController extends Controller
                 "Kode Rak" => $user->buku->kode_rak,
                 "Jumlah" => $user->buku->stok,
                 "Denda Harian" => $user->buku->denda_harian,
+                "Deskripsi Fisik" => $user->buku->physical_description,
+                "Lokasi" => $user->buku->locations,
+                "Bahasa" => $user->buku->language,
+                "Edisi" => $user->buku->edition,
             ];
         });
         return Excel::download(new BukuFisikExport($items), 'data_export.xlsx');
