@@ -27,7 +27,7 @@ class BukuFisikSamExport implements FromCollection, WithHeadings, ShouldAutoSize
 
     public function headings(): array
     {
-        return ["No", "ISBN", "Judul", "Pengarang", "Penerbit", "Tahun", "Jumlah", "ProgramStudi", "DeskripsiFisik", "Lokasi"];
+        return ["No", "ISBN", "Judul", "Pengarang", "Penerbit", "Tahun", "Jumlah", "ProgramStudi", "DeskripsiFisik", "Lokasi", "Bahasa", "Edisi"];
     }
 
     public function styles(Worksheet $sheet)
