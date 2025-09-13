@@ -149,6 +149,10 @@ class BukuFisikController extends Controller
                 'kode_rak' => $request->kode_rak,
                 'stok' => $request->stok,
                 'denda_harian' => $request->denda_harian,
+                'locations' => $request->locations,
+                'language' => $request->language,
+                'physical_description' => $request->physical_description,
+                'edition' => $request->edition,
             ];
 
             Buku::create($dataMahasiswa);
@@ -199,7 +203,11 @@ class BukuFisikController extends Controller
                 'prodi' => [
                     'id' => $user->buku->prodi->id ?? '',
                     'name' => $user->buku->prodi->name ?? ''
-                ]
+                ],
+                'locations' => $user->buku->locations,
+                'language' => $user->buku->language,
+                'physical_description' => $user->buku->physical_description,
+                'edition' => $user->buku->edition,
             ];
 
             DB::commit();
@@ -298,6 +306,10 @@ class BukuFisikController extends Controller
                 'denda_harian' => $request->denda_harian,
                 'book_description' => $request->book_description,
                 'studyProgramId' => $request->studyProgramId,
+                'locations' => $request->locations,
+                'language' => $request->language,
+                'physical_description' => $request->physical_description,
+                'edition' => $request->edition,
             ];
 
             if($request->cover) {

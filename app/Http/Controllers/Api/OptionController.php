@@ -8,6 +8,7 @@ use App\Resources\Responses\ApiResponse;
 
 use App\Models\Faculty;
 use App\Models\StudyProgram;
+use App\Models\SecondUser;
 use App\Models\User;
 use App\Models\MasterBuku;
 
@@ -39,7 +40,7 @@ class OptionController extends Controller
     }
 
     public function anggota(Request $request) {
-        $data = User::whereIn('role', ['Teacher', 'Student'])->orderByDesc('id')->select('id', 'name', 'identityNumber')->get()->toArray();
+        $data = SecondUser::select('id', 'name', 'user_id')->get()->toArray();
 
         return $this->res->successResponse('Data anggota berhasil didapatkan', $data, 200);
     }

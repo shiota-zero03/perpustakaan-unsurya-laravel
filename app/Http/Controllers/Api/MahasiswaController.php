@@ -18,6 +18,7 @@ use App\Imports\MahasiswaImport;
 use App\Resources\Responses\ApiResponse;
 use App\Services\Base64FileService;
 
+use App\Models\SecondUser;
 use App\Models\User;
 use App\Models\StudyProgram;
 use App\Models\Student;
@@ -42,14 +43,14 @@ class MahasiswaController extends Controller
         $nim = $request->input('nim');
         $status = $request->input('status');
 
-        $query = User::with('student')->orderByDesc('id')->where('role', 'Student');
+        $query = SecondUser::where('otoritas', 'MAHASISWA');
 
         if (!empty($name)) {
             $query->where('name', 'like', "%{$name}%");
         }
 
         if (!empty($nim)) {
-            $query->where('identityNumber', 'like', "%{$nim}%");
+            $query->where('nim', 'like', "%{$nim}%");
         }
 
         if (!empty($status)) {
@@ -60,16 +61,16 @@ class MahasiswaController extends Controller
 
         $items = $users->map(function ($user) {
             return [
-                'id' => $user->userId,
+                'id' => $user->id,
                 'name' =>  $user->name,
                 'email' => $user->email,
-                'nim' => $user->identityNumber,
-                'status' => $user->status == 'Active' ? 'Aktif' : ($user->email_verified_at ? 'Tidak Aktif' : 'Belum Diverifikasi'),
-                'waktu_terdaftar' => $user->created_at,
-                'gender' => $user->student->gender,
-                'phone' => $user->student->phoneNumber,
-                'faculty' => $user->student->fakultas->name ?? '',
-                'department' => $user->student->prodi->name ?? '',
+                'nim' => $user->nim,
+                'status' => $user->status,
+                'waktu_terdaftar' => $user->waktu_terdaftar,
+                'gender' => $user->gender,
+                'phone' => $user->phone_number,
+                'faculty' => $user->faculty ?? '',
+                'department' => $user->department ?? '',
             ];
         });
 
@@ -165,31 +166,29 @@ class MahasiswaController extends Controller
         try {
             DB::beginTransaction();
 
-            $user = User::where('userId', $id)->with(['student'])->first();
+            $user = SecondUser::find($id);
             if(!$user) {
-                return $this->res->errorResponse("User dengan id {$id} tidak ditemukan", [], 404);
+                return $this->res->errorResponse("User tidak ditemukan", [], 404);
             }
 
 
             $data = [
-                'id' => $user->userId,
-                'name' => $user->name,
+                'id' => $user->id,
+                'name' =>  $user->name,
                 'email' => $user->email,
-                'nim' => $user->identityNumber,
-                'status' => $user->status == 'Active' ? 'Aktif' : ($user->email_verified_at ? 'Tidak Aktif' : 'Belum Diverifikasi'),
-                'gender' => $user->student->gender,
-                'phone_number' => $user->student->phoneNumber,
-                'valid_until' => $user->student->validUntil,
-                'waktu_terdaftar' => $user->created_at,
-                'profile_picture' => $user->student->profilePicture,
+                'nim' => $user->nim,
+                'status' => $user->status,
+                'waktu_terdaftar' => $user->waktu_terdaftar,
+                'gender' => $user->gender,
+                'phone_number' => $user->phone_number,
                 'faculty' => [
-                    'id' => $user->student->fakultas->id ?? '',
-                    'name' => $user->student->fakultas->name ?? ''
+                    'id' => 0,
+                    'name' => $user->faculty ?? ''
                 ],
                 'department' => [
-                    'id' => $user->student->prodi->id ?? '',
-                    'name' => $user->student->prodi->name ?? ''
-                ],
+                    'id' => 0,
+                    'name' => $user->department ?? ''
+                ]
             ];
 
             DB::commit();

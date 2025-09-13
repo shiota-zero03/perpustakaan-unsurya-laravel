@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Providers;
+use App\Providers\SSOUserProvider;
+use Illuminate\Support\Facades\Auth;
 
 // use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -21,6 +23,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Auth::provider('sso', function ($app, array $config) {
+            return new SSOUserProvider();
+        });
     }
 }

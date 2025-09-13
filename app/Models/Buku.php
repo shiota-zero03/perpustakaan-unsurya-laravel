@@ -27,7 +27,11 @@ class Buku extends Model
         'stok',
         'denda_harian',
         'link_book',
-        'dipinjam'
+        'dipinjam',
+        'locations',
+        'language',
+        'physical_description',
+        'edition',
     ];
 
     public function master()

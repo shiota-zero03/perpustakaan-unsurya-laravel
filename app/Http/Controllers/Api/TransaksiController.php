@@ -190,18 +190,14 @@ class TransaksiController extends Controller
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
 
-            $checkUser = User::find($request->userId);
-            if (!$checkUser) {
-                return $this->res->errorResponse("User tidak ditemukan", [], 404);
-            }
             $checkBuku = MasterBuku::with(['buku', 'karya'])->find($request->bukuId);
             if (!$checkBuku) {
                 return $this->res->errorResponse("Buku tidak ditemukan", [], 404);
             }
+            
             $data = [
-                'userId' => $checkUser->id,
-                'id_anggota' => $checkUser->identityNumber,
-                'nama_anggota' => $checkUser->name,
+                'id_anggota' => $request->userId,
+                'nama_anggota' => $request->userName,
                 'bukuId' => $checkBuku->id,
                 'id_buku' => $checkBuku->book_id,
                 'judul_buku' => isset($checkBuku->buku) ? $checkBuku->buku->judul : (isset($checkBuku->karya) ? $checkBuku->karya->judul : ""),
@@ -470,6 +466,10 @@ class TransaksiController extends Controller
             "userId.max" =>"Peminjam harus memiliki 255 karakter.",
             "userId.required" =>"Peminjam wajib diisi.",
 
+            "userName.string" =>"Nama peminjam tidak valid.",
+            "userName.max" =>"Nama peminjam harus memiliki 255 karakter.",
+            "userName.required" =>"Nama peminjam wajib diisi.",
+
             "tanggal_peminjaman.string" =>"Tanggal peminjaman tidak valid.",
             "tanggal_peminjaman.max" =>"Tanggal peminjaman harus memiliki 255 karakter.",
             "tanggal_peminjaman.required" =>"Tanggal peminjaman wajib diisi.",
@@ -504,6 +504,7 @@ class TransaksiController extends Controller
             return Validator::make($request->all(), [
                 'bukuId' => ['required', 'string', 'max:255'],
                 'userId' => ['required', 'string', 'max:255'],
+                'userName' => ['required', 'string', 'max:255'],
                 'tanggal_peminjaman' => ['required', 'string', 'max:255'],
                 'jatuh_tempo' => ['required', 'string', 'max:255'],
                 'keterangan_peminjaman' => ['nullable', 'string', 'max:255'],

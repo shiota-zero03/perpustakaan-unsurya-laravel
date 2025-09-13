@@ -18,6 +18,7 @@ use App\Imports\DosenImport;
 use App\Resources\Responses\ApiResponse;
 use App\Services\Base64FileService;
 
+use App\Models\SecondUser;
 use App\Models\User;
 use App\Models\Teacher;
 
@@ -41,14 +42,14 @@ class DosenController extends Controller
         $nidn = $request->input('nidn');
         $status = $request->input('status');
 
-        $query = User::with('teacher')->orderByDesc('id')->where('role', 'Teacher');
+        $query = SecondUser::where('otoritas', '!=', 'MAHASISWA');
 
         if (!empty($name)) {
             $query->where('name', 'like', "%{$name}%");
         }
 
         if (!empty($nidn)) {
-            $query->where('identityNumber', 'like', "%{$nidn}%");
+            $query->where('nim', 'like', "%{$nidn}%");
         }
 
         if (!empty($status)) {
@@ -59,12 +60,12 @@ class DosenController extends Controller
 
         $items = $users->map(function ($user) {
             return [
-                'id' => $user->userId,
+                'id' => $user->id,
                 'name' =>  $user->name,
                 'email' => $user->email,
-                'nidn' => $user->identityNumber,
-                'status' => $user->status == 'Active' ? 'Aktif' : ($user->email_verified_at ? 'Tidak Aktif' : 'Belum Diverifikasi'),
-                'waktu_terdaftar' => $user->created_at
+                'nidn' => $user->nim,
+                'status' => $user->status,
+                'waktu_terdaftar' => $user->waktu_terdaftar
             ];
         });
 
@@ -159,23 +160,21 @@ class DosenController extends Controller
         try {
             DB::beginTransaction();
 
-            $user = User::where('userId', $id)->with(['teacher'])->first();
+            $user = SecondUser::find($id);
             if(!$user) {
-                return $this->res->errorResponse("User dengan id {$id} tidak ditemukan", [], 404);
+                return $this->res->errorResponse("User tidak ditemukan", [], 404);
             }
 
 
             $data = [
-                'id' => $user->userId,
+                'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'nidn' => $user->identityNumber,
-                'status' => $user->status == 'Active' ? 'Aktif' : ($user->email_verified_at ? 'Tidak Aktif' : 'Belum Diverifikasi'),
-                'gender' => $user->teacher->gender,
-                'phone_number' => $user->teacher->phoneNumber,
-                'valid_until' => $user->teacher->validUntil,
-                'waktu_terdaftar' => $user->created_at,
-                'profile_picture' => $user->teacher->profilePicture
+                'nidn' => $user->nim,
+                'status' => $user->status,
+                'gender' => $user->gender,
+                'phone_number' => $user->phone_number,
+                'waktu_terdaftar' => $user->waktu_terdaftar
             ];
 
             DB::commit();

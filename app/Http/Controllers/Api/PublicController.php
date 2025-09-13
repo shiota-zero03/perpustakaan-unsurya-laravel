@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Visitor;
 use App\Models\Banner;
 use App\Models\News;
+use App\Models\SecondUser;
 
 use App\Resources\Responses\ApiResponse;
 use Carbon\Carbon;
@@ -48,9 +49,9 @@ class PublicController extends Controller
 
             if($request->type === "Akademisi") {
                 if(!$request->member) {
-                    return $this->res->errorResponse('Masukkan NIM/NIDN terlebih dahulu', [], 422);
+                    return $this->res->errorResponse('Masukkan Nomor Identitas terlebih dahulu', [], 422);
                 }
-                $checkMember = User::where('identityNumber', $request->member)->first();
+                $checkMember = SecondUser::where('user_id', $request->member)->first();
                 if(!$checkMember) {
                     return $this->res->errorResponse('Pengguna tidak ditemukan', [], 404);
                 }
@@ -60,8 +61,9 @@ class PublicController extends Controller
                     return $this->res->errorResponse('Anda sudah berkunjung hari ini', [], 400);
                 }
                 $data = [
-                    'userId' => $checkMember->id,
                     'name' => $checkMember->name,
+                    'userId' => $checkMember->user_id,
+                    'email' => $checkMember->email,
                     'activity' => $request->activity,
                     'date' => $date,
                     'time' => $time,

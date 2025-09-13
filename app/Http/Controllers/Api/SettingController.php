@@ -20,11 +20,19 @@ class SettingController extends Controller
     }
     public function index(){
         $set = Setting::first();
-        $data = [
-            'profil' => $set->profil,
-            'petunjuk' => $set->petunjuk,
-            'prosedur' => $set->prosedur,
-        ];
+        if($set) {
+            $data = [
+                'profil' => $set->profil,
+                'petunjuk' => $set->petunjuk,
+                'prosedur' => $set->prosedur,
+            ];
+        } else {
+            $data = [
+                'profil' => "",
+                'petunjuk' => "",
+                'prosedur' => "",
+            ];
+        }
         return $this->res->successResponse('data setting berhasil didapatkan', $data, 201);
     }
 
@@ -34,17 +42,30 @@ class SettingController extends Controller
         try {
             DB::beginTransaction();
 
+            $setting = Setting::first();
+
             if($request->profil) {
                 $data['profil'] = $request->profil;
+                $data['petunjuk'] = $setting ? $setting->petunjuk : "";
+                $data['prosedur'] = $setting ? $setting->prosedur : "";
             }
             if($request->petunjuk) {
                 $data['petunjuk'] = $request->petunjuk;
+                $data['profil'] = $setting ? $setting->petunjuk : "";
+                $data['prosedur'] = $setting ? $setting->prosedur : "";
             }
             if($request->prosedur) {
                 $data['prosedur'] = $request->prosedur;
+                $data['petunjuk'] = $setting ? $setting->petunjuk : "";
+                $data['profil'] = $setting ? $setting->prosedur : "";
             }
 
-            Setting::first()->update($data);
+
+            if ($setting) {
+                $setting->update($data);
+            } else {
+                $setting = Setting::create($data);
+            }
 
             DB::commit();
 

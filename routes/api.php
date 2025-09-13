@@ -31,7 +31,9 @@ Route::controller(\App\Http\Controllers\Api\PublicController::class)->group(func
     Route::post('/visitor', 'visitor_store');
 });
 
-Route::middleware('auth:sanctum')->group(function() {
+Route::post('/cron/data-anggota', [\App\Http\Controllers\Api\SincronController::class, 'SinkronAnggota']);
+
+Route::middleware(['authnew'])->group(function() {
     Route::get('/profile', [\App\Http\Controllers\Api\AuthController::class, 'get_profile']);
     Route::put('/profile', [\App\Http\Controllers\Api\AuthController::class, 'update_profile']);
     Route::post('/auth/sign-out', [\App\Http\Controllers\Api\AuthController::class, 'logout']);

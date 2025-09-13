@@ -269,6 +269,11 @@ class LandingPageController extends Controller
                 'penulis' => $user->buku->penulis,
                 'tahun_terbit' => $user->buku->tahun_terbit,
                 'link_book' => $user->buku->link_book,
+                'edition' => $user->buku->edition,
+                'isbn' => $user->buku->isbn,
+                'type' => $user->type,
+                'physical_description' => $user->buku->physical_description,
+                'stok' => (int) $user->buku->stok - (int) $user->buku->dipinjam,
             ];
         });
 
@@ -311,10 +316,14 @@ class LandingPageController extends Controller
                 'isbn' => $user->buku->isbn,
                 'tanggal_masuk' => $user->buku->tanggal_masuk,
                 'kode_rak' => $user->buku->kode_rak,
-                'stok' => $user->buku->stok,
+                'stok' => (int) $user->buku->stok - (int) $user->buku->dipinjam,
                 'denda_harian' => $user->buku->denda_harian,
                 'link_book' => $user->buku->link_book,
                 'book_description' => $user->buku->book_description,
+                'locations' => $user->buku->locations,
+                'language' => $user->buku->language,
+                'physical_description' => $user->buku->physical_description,
+                'edition' => $user->buku->edition,
                 'prodi' => [
                     'id' => $user->buku->prodi->id ?? '',
                     'name' => $user->buku->prodi->name ?? ''

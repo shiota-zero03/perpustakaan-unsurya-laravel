@@ -20,6 +20,9 @@ use App\Models\Student;
 use App\Models\Admin;
 use App\Helpers\NotificationHelpers;
 
+use Illuminate\Support\Facades\Http;
+
+
 class AuthController extends Controller
 {
     private $userModel, $res, $notif;
@@ -31,41 +34,76 @@ class AuthController extends Controller
         $this->notif = $notif;
     }
 
+    public function base64UrlDecode($data) {
+        return base64_decode(strtr($data, '-_', '+/'));
+    }
+
     public function sign_in(Request $request)
     {
         try {
-            DB::beginTransaction();
-
             $validator = $this->__rules('sign-in', $request);
 
             if ($validator->fails()) {
                 return $this->res->errorResponse('Terjadi kesalahan validasi, silahkan cek kembali form anda', $validator->errors()->toArray(), 422);
             }
 
-            if(!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-                return $this->res->errorResponse('Email atau password anda salah', [], 400);
-            }
-
-            $user = Auth::user();
-
-            if($user->status !== 'Active') {
-                Auth::user()->tokens()->delete();
-                return $this->res->errorResponse('Akun anda tidak aktif', [], 400);
-            }
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            $data = [
-                'token' => $token,
-                'role' => $user->role
+            $dataRequest = [
+                'client_id'     => env('UNSURYA_MIDDLEWARE_CLIENT_ID'),
+                'client_secret' => env('UNSURYA_MIDDLEWARE_CLIENT_SECRET'),
+                'username'      => $request->username,   // ganti dari email → username
+                'password'      => $request->password,
             ];
-            DB::commit();
+            $response = Http::asForm()->post(env('UNSURYA_MIDDLEWARE_API').'/login', $dataRequest);
+            \Log::info($response);
+            if($response) {
+                if (isset($response['status']) && $response['status'] >= 400) {
+                    return $this->res->errorResponse($response['messages']['error'] ?? "Kredensial salah atau data tidak ditemukan", [], $response['status'] ?? 400);
+                } else {
+                    $parts = explode('.', $response['access_token']);
+                    if (count($parts) !== 3) {
+                        return $this->res->errorResponse("Invalid JWT format", [], 400);
+                    }
+                    $header = json_decode($this->base64UrlDecode($parts[0]), true);
+                    $payload = json_decode($this->base64UrlDecode($parts[1]), true);
+                    $signature = $parts[2];
 
-            return $this->res->successResponse('Berhasil Login', $data);
+                    $data = [
+                        'token' => $response['access_token'],
+                        'refresh' => $response['refresh_token'],
+                        'user' => $payload['data'] ?? null,
+                        'role' => $payload['data'] ? $this->getRole($payload['data']['otoritas'][0] ?? "") : "UNKNOWN"
+                    ];
+
+                    \Auth::loginUsingId($request->username);
+                    session(['sso_user' => (object) $payload['data']]);
+
+                    if($data['role'] === "UNKNOWN") {
+                        return $this->res->errorResponse("Anda tidak memiliki akses ke situs ini", [], 400);
+                    }
+
+                    return $this->res->successResponse('Berhasil Login', $data);
+                }
+            }
 
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error("Error saat mengirim data: " . $th->getMessage());
             return $this->res->errorResponse($th->getMessage(), [], 500);
+        }
+    }
+
+    public function getRole (string $role) {
+        switch (strtoupper($role)) {
+            case 'MAHASISWA':
+                return "Student";
+                break;
+            case 'KA PERPUSTAKAAN':
+                return "SuperAdmin";
+                break;
+
+            default:
+                return "UNKNOWN";
+                break;
         }
     }
 
@@ -312,6 +350,11 @@ class AuthController extends Controller
             'email.min' => 'Email minimum harus memiliki 3 karakter',
             'email.max' => 'Email maksimal harus memiliki 255 karakter',
             'email.unique' => 'Email sudah pernah digunakan',
+            'username.required' => 'Username wajib diisi',
+            'username.string' => 'Username tidak valid',
+            'username.min' => 'Username minimum harus memiliki 3 karakter',
+            'username.max' => 'Username maksimal harus memiliki 255 karakter',
+            'username.unique' => 'Username sudah pernah digunakan',
             'password.required' => 'Password wajib diisi',
             'password.min' => 'Password minimum harus memiliki 6 karakter',
             'password.max' => 'Password maksimal harus memiliki 255 karakter',
@@ -335,7 +378,7 @@ class AuthController extends Controller
             ], $message);
         } elseif($type == 'sign-in'){
             return Validator::make($request->all(), [
-                'email' => ['required', 'email', 'min:3', 'max:255'],
+                'username' => ['required', 'string', 'min:3', 'max:255'],
                 'password' => ['required', 'string', 'min:6', 'max:255'],
             ], $message);
         } elseif($type == 'forgot'){

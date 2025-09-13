@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'sso' => [
+            'driver' => 'session',
+            'provider' => 'sso-users',
+        ],
     ],
 
     /*
@@ -63,6 +67,10 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
+        ],
+
+        'sso-users' => [
+            'driver' => 'sso', // kita bikin custom provider
         ],
 
         // 'users' => [

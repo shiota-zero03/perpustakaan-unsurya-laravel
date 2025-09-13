@@ -56,7 +56,7 @@ class VisitorController extends Controller
         $items = $users->map(function ($user) {
             return [
                 "id" => $user->id,
-                "member" => $user->userId ? $user->user->identityNumber : $user->email,
+                "member" => $user->userId ?? $user->email,
                 "name" => $user->name,
                 "activity" => $user->activity,
                 "time" => $user->date
