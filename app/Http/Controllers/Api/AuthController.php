@@ -100,9 +100,8 @@ class AuthController extends Controller
             case 'KA PERPUSTAKAAN':
                 return "SuperAdmin";
                 break;
-
             default:
-                return "UNKNOWN";
+                return "Teacher";
                 break;
         }
     }
