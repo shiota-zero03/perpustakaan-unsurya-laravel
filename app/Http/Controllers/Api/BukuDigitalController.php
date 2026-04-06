@@ -236,7 +236,6 @@ class BukuDigitalController extends Controller
             Log::error("Error saat mengirim data: " . $th->getMessage());
             return $this->res->errorResponse($th->getMessage(), [], 500);
         }
-        Log::info($request->all());
     }
 
     /**
@@ -424,7 +423,7 @@ class BukuDigitalController extends Controller
             "isbn.required" => "ISBN wajib diisi.",
 
             "link_book.string" => "URL Buku tidak valid.",
-            "link_book.max" => "URL Buku maksimal harus memiliki 255 karakter.",
+            "link_book.max" => "URL Buku maksimal harus memiliki 5mb.",
             "link_book.required" => "URL Buku wajib diisi.",
 
             "cover.file" =>"Gambar tidak valid.",
@@ -443,7 +442,7 @@ class BukuDigitalController extends Controller
             ];
 
             if ($request->hasFile('link_book')) {
-                $rules['link_book'] = ['required', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048']; // max 2MB
+                $rules['link_book'] = ['required', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:30720']; // max 2MB
             } else {
                 $rules['link_book'] = ['required'];
             }
@@ -463,7 +462,7 @@ class BukuDigitalController extends Controller
                 $rules['cover'] = ['required', 'file', 'mimes:png,jpg,jpeg'];
             }
             if ($request->hasFile('link_book')) {
-                $rules['link_book'] = ['required', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:2048']; // max 2MB
+                $rules['link_book'] = ['required', 'file', 'mimes:pdf,png,jpg,jpeg', 'max:30720']; // max 2MB
             } else if ($request->filled('link_book')) {
                 $rules['link_book'] = ['required'];
             }

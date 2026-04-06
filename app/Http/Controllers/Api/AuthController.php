@@ -355,12 +355,12 @@ class AuthController extends Controller
             'username.max' => 'Username maksimal harus memiliki 255 karakter',
             'username.unique' => 'Username sudah pernah digunakan',
             'password.required' => 'Password wajib diisi',
-            'password.min' => 'Password minimum harus memiliki 6 karakter',
+            'password.min' => 'Password minimum harus memiliki 3 karakter',
             'password.max' => 'Password maksimal harus memiliki 255 karakter',
             'accountType.required' => 'Tipe akun wajib diisi',
             'accountType.in' => 'Tipe akun harus diantara Teacher atau Student.',
             'new_password.required' => 'Password baru wajib diisi',
-            'new_password.min' => 'Password baru minimal harus memiliki 6 karakter',
+            'new_password.min' => 'Password baru minimal harus memiliki 3 karakter',
             'new_password.max' => 'Password baru maksimal harus memiliki 255 karakter',
             'confirmation_password.required' => 'Konfirmasi password wajib diisi',
             'confirmation_password.min' => 'Konfirmasi password minimal harus memiliki 6 karakter',
@@ -378,7 +378,7 @@ class AuthController extends Controller
         } elseif($type == 'sign-in'){
             return Validator::make($request->all(), [
                 'username' => ['required', 'string', 'min:3', 'max:255'],
-                'password' => ['required', 'string', 'min:6', 'max:255'],
+                'password' => ['required', 'string', 'min:3', 'max:255'],
             ], $message);
         } elseif($type == 'forgot'){
             return Validator::make($request->all(), [
@@ -388,7 +388,7 @@ class AuthController extends Controller
             return Validator::make($request->all(), [
                 'email' => ['required', 'email', 'min:3', 'max:255'],
                 'token' => ['required', 'string', 'min:3', 'max:255'],
-                'new_password' => ['required', 'string', 'min:6', 'max:255'],
+                'new_password' => ['required', 'string', 'min:3', 'max:255'],
                 'confirmation_password' => ['required', 'string', 'min:6', 'max:255', 'same:new_password'],
             ], $message);
         }
@@ -411,11 +411,11 @@ class AuthController extends Controller
             "email.required" =>"Email wajib diisi.",
             "email.unique" =>"Email sudah pernah digunakan.",
             "password.string" =>"Password tidak valid.",
-            "password.min" =>"Password minimal harus memiliki 6 karakter.",
+            "password.min" =>"Password minimal harus memiliki 3 karakter.",
             "password.max" =>"Password maksimal harus memiliki 255 karakter.",
             "password.required" =>"Password wajib diisi.",
             "position.string" =>"Jabatan tidak valid.",
-            "position.min" =>"Jabatan minimal harus memiliki 6 karakter.",
+            "position.min" =>"Jabatan minimal harus memiliki 3 karakter.",
             "position.max" =>"Jabatan maksimal harus memiliki 255 karakter.",
             "position.required" =>"Jabatan wajib diisi.",
             "status.string" =>"Status tidak valid.",
@@ -443,7 +443,7 @@ class AuthController extends Controller
             $rules['identityNumber'] = ['required', 'string', 'min:3', 'max:255', 'unique:users,identityNumber'];
         }
         if($request->password) {
-            $rules['password'] = ['required', 'string', 'min:6', 'max:255'];
+            $rules['password'] = ['required', 'string', 'min:3', 'max:255'];
         }
 
         return Validator::make($request->all(), $rules, $message);

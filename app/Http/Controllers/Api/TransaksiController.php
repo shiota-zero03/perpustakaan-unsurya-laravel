@@ -194,7 +194,12 @@ class TransaksiController extends Controller
             if (!$checkBuku) {
                 return $this->res->errorResponse("Buku tidak ditemukan", [], 404);
             }
-            
+
+            $count = Transaction::where('id_anggota', $request->userId)->where('tanggal_pengembalian', null)->count();
+            if($count >= 3) {
+                return $this->res->errorResponse("Setiap anggota hanya dapat meminjam maksimal 3 buku", [], 400);
+            }
+
             $data = [
                 'id_anggota' => $request->userId,
                 'nama_anggota' => $request->userName,

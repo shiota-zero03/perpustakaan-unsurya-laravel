@@ -62,11 +62,12 @@ class PublicController extends Controller
                 }
                 $data = [
                     'name' => $checkMember->name,
-                    'userId' => $checkMember->user_id,
+                    'id_anggota' => $checkMember->user_id,
                     'email' => $checkMember->email,
                     'activity' => $request->activity,
                     'date' => $date,
                     'time' => $time,
+                    'prodi' => $checkMember->department
                 ];
             } else {
                 if(!$request->name) {

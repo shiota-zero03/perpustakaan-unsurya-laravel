@@ -260,7 +260,6 @@ class BukuFisikController extends Controller
             Log::error("Error saat mengirim data: " . $th->getMessage());
             return $this->res->errorResponse($th->getMessage(), [], 500);
         }
-        Log::info($request->all());
     }
 
     /**

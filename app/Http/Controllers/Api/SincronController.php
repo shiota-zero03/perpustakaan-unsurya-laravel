@@ -39,10 +39,6 @@ class SincronController extends Controller
         ]);
 
         if (!$responseMahasiswa->successful() || !$responsePegawai->successful()) {
-            \Log::info([
-                'mahasiswa' => $responseMahasiswa->body(),
-                'pegawai'   => $responsePegawai->body(),
-            ]);
             return $this->res->successResponse('Data gagal disinkronkan', [], 200);
         }
 

@@ -26,6 +26,7 @@ class VisitorController extends Controller
         $startDate = $request->input('date');
         $endDate = $request->input('end');
         $identityNumber = $request->input('identityNumber');
+        $prodi = $request->input('prodi');
 
         $query = Visitor::with('user')->orderByDesc('id');
 
@@ -50,16 +51,20 @@ class VisitorController extends Controller
                 $q->where('identityNumber', 'like', "%{$identityNumber}%");
             });
         }
+        if (!empty($prodi)) {
+            $query->where('prodi', 'like', "%{$prodi}%");
+        }
 
         $users = $query->paginate($limit, ['*'], 'page', $page);
 
         $items = $users->map(function ($user) {
             return [
                 "id" => $user->id,
-                "member" => $user->userId ?? $user->email,
+                "member" => $user->id_anggota ?? $user->userId ?? $user->email,
                 "name" => $user->name,
                 "activity" => $user->activity,
-                "time" => $user->date
+                "time" => $user->date,
+                "prodi" => $user->prodi
             ];
         });
 
