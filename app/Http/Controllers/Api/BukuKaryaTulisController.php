@@ -13,7 +13,9 @@ use Illuminate\Support\Str;
 
 use App\Exports\Buku\TASExport;
 use App\Exports\Buku\BukuFisikSampleExport;
+use App\Exports\Buku\TASkripsiSampleExport;
 use App\Imports\BukuFisikImport;
+use App\Imports\TASkripsiImport;
 use App\Resources\Responses\ApiResponse;
 use App\Services\Base64FileService;
 
@@ -21,6 +23,7 @@ use App\Models\MasterBuku;
 use App\Models\KaryaTulis;
 use App\Models\DokumenKaryaTulis;
 use App\Models\Buku;
+use App\Models\StudyProgram;
 
 class BukuKaryaTulisController extends Controller
 {
@@ -405,6 +408,19 @@ class BukuKaryaTulisController extends Controller
         }
     }
 
+    public function sample_export()
+    {
+        $programStudy = StudyProgram::all()->toArray();
+        $data = [];
+        foreach($programStudy as $index => $value) {
+            $data[] = [
+                'No' => $index + 1,
+                'Nama Program Studi' => $value['name']
+            ];
+        }
+        return Excel::download(new TASkripsiSampleExport($data), 'sample_data_ta_skripsi.xlsx');
+    }
+
     public function karya_export()
     {
         $users = MasterBuku::where('type', 'Karya Tulis')->with(['karya'])->get();
@@ -423,6 +439,44 @@ class BukuKaryaTulisController extends Controller
             ];
         });
         return Excel::download(new TASExport($items), 'data_export.xlsx');
+    }
+
+    public function ta_skripsi_import(Request $request)
+    {
+        set_time_limit(120);
+        $request->validate([
+            'dataImport' => 'required|string',
+        ]);
+
+        try {
+            // Pisahkan metadata (prefix) dari base64
+            if (str_contains($request->dataImport, ';base64,')) {
+                [, $base64Data] = explode(';base64,', $request->dataImport);
+            } else {
+                return $this->res->errorResponse("Format base64 tidak valid", [], 422);
+            }
+
+            // Decode base64 menjadi data mentah
+            $fileContent = base64_decode($base64Data, true);
+            if ($fileContent === false) {
+                return $this->res->errorResponse("Data base64 tidak valid", [], 422);
+            }
+
+            // Simpan ke file sementara
+            $tempPath = storage_path('app/temp_import.xlsx');
+            file_put_contents($tempPath, $fileContent);
+
+            // Import file Excel dari path
+            Excel::import(new TASkripsiImport, $tempPath);
+
+            // Hapus file setelah import selesai
+            unlink($tempPath);
+
+            return $this->res->successResponse('Data TA/Skripsi berhasil diimport', [], 200);
+        } catch (\Exception $e) {
+            Log::error('Import Excel Error: ' . $e->getMessage());
+            return $this->res->errorResponse("Beberapa data gagal diimport", [], 422);
+        }
     }
 
     public function __rules(string $type, Request $request, $user = null) {

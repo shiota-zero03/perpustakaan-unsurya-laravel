@@ -99,6 +99,8 @@ Route::middleware(['authnew'])->group(function() {
         Route::get('/', 'index');
         Route::get('/{id}', 'show');
         Route::get('/data/export', 'karya_export');
+        Route::post('/data/import', 'ta_skripsi_import');
+        Route::get('/sample/export', 'sample_export');
         Route::post('/store', 'store');
         Route::post('/action-selected', 'selected_action');
         Route::put('/update/{id}', 'update');
