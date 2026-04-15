@@ -26,7 +26,7 @@ class TASExport implements FromCollection, WithHeadings, ShouldAutoSize, WithSty
 
     public function headings(): array
     {
-        return ["No", "No. Urut", "Kode Klasifikasi", "Judul Karya", "Penulis", "NIM", "Tahun Terbit", "Jenis", "Tanggal Masuk", "Kode Rak"];
+        return ["No", "No. Urut", "Kode Klasifikasi", "Judul Karya", "Penulis", "NIM", "Tahun Terbit", "Fakultas", "Program Studi", "Jenis", "Tanggal Masuk", "Kode Rak"];
     }
 
     public function styles(Worksheet $sheet)

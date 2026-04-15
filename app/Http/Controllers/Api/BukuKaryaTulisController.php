@@ -421,9 +421,19 @@ class BukuKaryaTulisController extends Controller
         return Excel::download(new TASkripsiSampleExport($data), 'sample_data_ta_skripsi.xlsx');
     }
 
-    public function karya_export()
+    public function karya_export(Request $request)
     {
-        $users = MasterBuku::where('type', 'Karya Tulis')->with(['karya'])->get();
+        $prodi = $request->input('prodi');
+        $query = MasterBuku::where('type', 'Karya Tulis')->with(['karya']);
+        if (!empty($prodi)) {
+            $query->whereHas('karya', function ($q) use ($prodi) {
+                $q->whereHas('prodi', function ($p) use ($prodi) {
+                    $p->where('name', 'like', "%{$prodi}%");
+                });
+            });
+        }
+
+        $users = $query->get();
         $items = $users->map(function ($user, $index) {
             return [
                 "No" => $index + 1,
@@ -433,6 +443,8 @@ class BukuKaryaTulisController extends Controller
                 "Penulis" => $user->karya->penulis,
                 "NIM" => $user->karya->nim,
                 "Tahun Terbit" => $user->karya->tahun_terbit,
+                "Fakultas" => $user->karya->fakultas ? $user->karya->fakultas->name : null,
+                "Program Studi" => $user->karya->prodi ? $user->karya->prodi->name : null,
                 "Jenis" => $user->karya->jenis,
                 "Tanggal Masuk" => $user->karya->tanggal_masuk ? date('d/m/Y', strtotime($user->karya->tanggal_masuk)) : "",
                 "Kode Rak" => $user->karya->kode_rak,
